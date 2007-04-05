@@ -5,6 +5,7 @@
 #include <QGridLayout>
 
 #include "ClusterFillControl.h"
+#include "HAction.h"
 
 ClusterFillControl::ClusterFillControl(QWidget* parent)
 	: QWidget(parent)
@@ -60,6 +61,11 @@ ClusterFillControl::ClusterFillControl(QWidget* parent)
 
 void ClusterFillControl::activate()
 {
-	emit activated(double(minSpin->value()), double(maxSpin->value()),
-	               chanceSpin->value(), radiusSpin->value());
+  HAction* act = new HAction;
+  act->setType(HAction::clusterFill);
+  act->setMinimum(minSpin->value());
+  act->setMaximum(maxSpin->value());
+  act->setChance(chanceSpin->value());
+  act->setRadius(radiusSpin->value());
+	emit activated(act);
 }

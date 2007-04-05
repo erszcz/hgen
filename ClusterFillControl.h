@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "HAction.h"
+
 class QSpinBox;
 
 class ClusterFillControl : public QWidget
@@ -13,8 +15,7 @@ class ClusterFillControl : public QWidget
 	ClusterFillControl(QWidget* parent = 0);
 
 	signals:
-	void activated(double min, double max,
-	               short clusterChance, short radius);
+	void activated(HAction* act);
 
 	private slots:
 	void activate();

@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "HAction.h"
+
 class QSpinBox;
 
 class ClusterFilterControl : public QWidget
@@ -13,7 +15,7 @@ class ClusterFilterControl : public QWidget
 	ClusterFilterControl(QWidget* parent = 0);
 
 	signals:
-	void activated(short radius);
+	void activated(HAction* act);
 
 	private slots:
 	void activate();

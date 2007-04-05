@@ -6,6 +6,11 @@
 
 #include "HeightmapCore.h"
 #include "Heightmap.h"
+#include "HAction.h"
+
+//
+#include <iostream>
+//
 
 Heightmap::Heightmap(uint width, uint height, uint margin)
 	: QObject(),
@@ -73,114 +78,64 @@ QSize Heightmap::getSize() const
 	return QSize(internalMap.getWidth(), internalMap.getHeight());
 }
 
-void Heightmap::randomFill(double min, double max)
+void Heightmap::performHAction(HAction* action)
 {
+  std::cout << "dupa1" << endl;
 	emit processingStarted();
-
-	internalMap.randomFill(min, max);
-	emit mapChanged();
-
-	emit processingFinished();
-}
-
-void Heightmap::clusterFill(double min, double max,
-                            short clusterChance, short radius)
-{
-	emit processingStarted();
-
-	internalMap.clusterFill(min, max, clusterChance, radius);
-	emit mapChanged();
-
-	emit processingFinished();
-}
-
-void Heightmap::clusterFilter(short radius)
-{
-	emit processingStarted();
-
-	internalMap.clusterFilter(radius);
-	emit mapChanged();
-
-	emit processingFinished();
-}
-
-void Heightmap::alternateClusterFilter(short radius)
-{
-	emit processingStarted();
-
-	internalMap.alternateClusterFilter(radius);
-	emit mapChanged();
-
-	emit processingFinished();
-}
-
-void Heightmap::liquidFilter(double c, double d, double t, double u,
-                             short iters, bool wrap)
-{
-	emit processingStarted();
-
-	for(int i = 0; i < iters; ++i)
+  
+  int iters = action->iterations();
+  std::cout << "iters: " << iters << endl;
+	for(int i = -1; i < iters; ++i)
 	{
-		internalMap.liquidFilter(c, d, t, u, wrap);
+    std::cout << "dupa2" << endl;
+    if (i == -1) iters = 0 | (iters - 1);
+
+    switch (action->type())
+    {
+      case HAction::randomFill:
+        internalMap.randomFill(action->minimum(), action->maximum());
+        break;
+      case HAction::clusterFill:
+        internalMap.clusterFill(action->minimum(),
+                                action->maximum(),
+                                action->chance(),
+                                action->radius());
+        break;
+      case HAction::clusterFilter:
+        internalMap.clusterFilter(action->radius());
+        break;
+      case HAction::alternateClusterFilter:
+        internalMap.alternateClusterFilter(action->radius());
+        break;
+      case HAction::liquidFilter:
+        internalMap.liquidFilter(action->waveSpeed(),
+                                 action->nodeDistance(),
+                                 action->timeStep(),
+                                 action->viscosity(),
+                                 action->wrap());
+        break;
+      case HAction::smoothFilter:
+        internalMap.smoothFilter(action->radius(), action->wrap());
+        break;
+      case HAction::walkerFilter:
+        internalMap.walkerFilter(action->incStep(),
+                                 action->decStep(),
+                                 action->wrap());
+        break;
+      case HAction::faultingFilter:
+        internalMap.faultingFilter(action->incStep(),
+                                   action->decStep(),
+                                   action->wrap());
+        break;
+    }
+    
 		_checkTime();
 	}
 
-	emit mapChanged();
-	emit processingFinished();
-}
-
-void Heightmap::smoothFilter(short iters, short radius, bool wrap)
-{
-	emit processingStarted();
-
-	for(int i = 0; i < iters; ++i)
-	{
-		internalMap.smoothFilter(radius, wrap);
-		_checkTime();
-	}
+  delete action;
 
 	emit mapChanged();
 	emit processingFinished();
-}
-
-void Heightmap::walkerFilter(short count, short incStep, short decStep, bool wrap)
-{
-	emit processingStarted();
-
-	for(int i = 0; i < count; ++ i)
-	{
-		internalMap.walkerFilter(incStep, decStep, wrap);
-		_checkTime();
-	}
-
-	emit mapChanged();
-	emit processingFinished();
-}
-
-void Heightmap::faultingFilter(short iters, short incStep, short decStep, bool wrap)
-{
-	emit processingStarted();
-
-	for(int l = 0; l < iters; ++l)
-	{
-		internalMap.faultingFilter(incStep, decStep, wrap);
-		_checkTime();
-	}
-	
-	emit mapChanged();
-	emit processingFinished();
-}
-
-void Heightmap::wrapEdges()
-{
-	internalMap.wrapEdges();
-	emit mapChanged();
-}
-
-void Heightmap::normalize()
-{
-	internalMap.normalize();
-	emit mapChanged();
 }
 
 bool Heightmap::saveToDisk(QString filename)

@@ -5,6 +5,7 @@
 #include <QGridLayout>
 
 #include "AlternateClusterFilterControl.h"
+#include "HAction.h"
 
 AlternateClusterFilterControl::AlternateClusterFilterControl(QWidget* parent)
 	: QWidget(parent)
@@ -30,5 +31,8 @@ AlternateClusterFilterControl::AlternateClusterFilterControl(QWidget* parent)
 
 void AlternateClusterFilterControl::activate()
 {
-	emit activated(radiusSpin->value());
+  HAction* act = new HAction;
+  act->setType(HAction::alternateClusterFilter);
+  act->setRadius(radiusSpin->value());
+	emit activated(act);
 }

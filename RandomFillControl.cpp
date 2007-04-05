@@ -5,6 +5,7 @@
 #include <QGridLayout>
 
 #include "RandomFillControl.h"
+#include "HAction.h"
 
 RandomFillControl::RandomFillControl(QWidget* parent)
 	: QWidget(parent)
@@ -41,5 +42,9 @@ RandomFillControl::RandomFillControl(QWidget* parent)
 
 void RandomFillControl::activate()
 {
-	emit activated(double(minSpin->value()), double(maxSpin->value()));
+  HAction* act = new HAction;
+  act->setType(HAction::randomFill);
+  act->setMinimum(minSpin->value());
+  act->setMaximum(maxSpin->value());
+	emit activated(act);
 }

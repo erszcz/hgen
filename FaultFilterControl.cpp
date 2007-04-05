@@ -6,6 +6,7 @@
 #include <QGridLayout>
 
 #include "FaultFilterControl.h"
+#include "HAction.h"
 
 FaultFilterControl::FaultFilterControl(QWidget* parent)
 	: QWidget(parent)
@@ -59,6 +60,11 @@ FaultFilterControl::FaultFilterControl(QWidget* parent)
 
 void FaultFilterControl::activate()
 {
-	emit activated(itersSpin->value(), incStepSpin->value(),
-	               -(decStepSpin->value()), wrapCheck->isChecked());
+  HAction* act = new HAction;
+  act->setType(HAction::faultingFilter);
+  act->setIterations(itersSpin->value());
+  act->setIncStep(incStepSpin->value());
+  act->setDecStep(decStepSpin->value());
+  act->setWrap(wrapCheck->isChecked());
+	emit activated(act);
 }

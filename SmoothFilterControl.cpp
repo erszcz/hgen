@@ -6,6 +6,7 @@
 #include <QCheckBox>
 
 #include "SmoothFilterControl.h"
+#include "HAction.h"
 
 SmoothFilterControl::SmoothFilterControl(QWidget* parent)
 	: QWidget(parent)
@@ -48,5 +49,10 @@ SmoothFilterControl::SmoothFilterControl(QWidget* parent)
 
 void SmoothFilterControl::activate()
 {
-	emit activated(itersSpin->value(), radiusSpin->value(), wrapCheck->isChecked());
+  HAction* act = new HAction;
+  act->setType(HAction::smoothFilter);
+  act->setIterations(itersSpin->value());
+  act->setRadius(radiusSpin->value());
+  act->setWrap(wrapCheck->isChecked());
+	emit activated(act);
 }

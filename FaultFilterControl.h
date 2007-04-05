@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "HAction.h"
+
 class QSpinBox;
 class QCheckBox;
 
@@ -14,7 +16,7 @@ class FaultFilterControl : public QWidget
 	FaultFilterControl(QWidget* parent = 0);
 
 	signals:
-	void activated(short iters, short incStep, short decStep, bool wrap);
+	void activated(HAction* act);
 
 	private slots:
 	void activate();

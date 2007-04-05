@@ -277,7 +277,7 @@ void HeightmapCore::walkerFilter(int incStep, int decStep, bool wrap)
 	if (_random(0, 100) > 50)
 		step = incStep;
 	else
-		step = -decStep;
+		step = decStep;
 
 	for(int l = 0; l < lifeSpan; ++l)
 	{

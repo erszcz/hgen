@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "HAction.h"
+
 class QSpinBox;
 class QDoubleSpinBox;
 class QCheckBox;
@@ -15,8 +17,7 @@ class LiquidFilterControl : public QWidget
 	LiquidFilterControl(QWidget* parent = 0);
 
 	signals:
-	void activated(double c, double d, double t, double u,
-	               short iters, bool wrap);
+	void activated(HAction* act);
 
 	private slots:
 	void activate();

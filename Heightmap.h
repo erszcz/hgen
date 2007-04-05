@@ -10,6 +10,8 @@
 
 class QString;
 
+class HAction;
+
 class Heightmap : public QObject
 {
 	Q_OBJECT
@@ -24,27 +26,8 @@ class Heightmap : public QObject
 
 	QImage getImage() const;
 
-	public slots:
-	void randomFill(double min = -500., double max = 500.);
-
-	void clusterFill(double min = -500., double max = 500.,
-	                 short clusterChance = 60, short radius = 1);
-
-	void clusterFilter(short radius = 1);
-	void alternateClusterFilter(short radius = 0);
-
-	void liquidFilter(double c = 100., double d = 10., double t = .033,
-	                  double u = 100., short iters = 250, bool wrap = true);
-	
-	void smoothFilter(short iters, short radius, bool wrap);
-
-	void walkerFilter(short count, short incStep, short decStep, bool wrap);
-
-	void faultingFilter(short iters, short incStep, short decStep, bool wrap);
-
-	void wrapEdges();
-
-	void normalize();
+  public slots:
+  void performHAction(HAction* action);
 
 	bool saveToDisk(QString filename);
 

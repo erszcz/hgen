@@ -5,6 +5,7 @@
 #include <QGridLayout>
 
 #include "ClusterFilterControl.h"
+#include "HAction.h"
 
 ClusterFilterControl::ClusterFilterControl(QWidget* parent)
 	: QWidget(parent)
@@ -30,5 +31,8 @@ ClusterFilterControl::ClusterFilterControl(QWidget* parent)
 
 void ClusterFilterControl::activate()
 {
-	emit activated(radiusSpin->value());
+  HAction* act = new HAction;
+  act->setType(HAction::clusterFilter);
+  act->setRadius(radiusSpin->value());
+	emit activated(act);
 }

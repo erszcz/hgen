@@ -7,6 +7,7 @@
 #include <QCheckBox>
 
 #include "LiquidFilterControl.h"
+#include "HAction.h"
 
 LiquidFilterControl::LiquidFilterControl(QWidget* parent)
 	: QWidget(parent)
@@ -82,7 +83,12 @@ LiquidFilterControl::LiquidFilterControl(QWidget* parent)
 
 void LiquidFilterControl::activate()
 {
-	emit activated(double(cSpin->value()), double(dSpin->value()),
-	               tSpin->value(), double(uSpin->value()),
-								 itersSpin->value(), wrapCheck->isChecked());
+  HAction* act = new HAction;
+  act->setType(HAction::liquidFilter);
+  act->setWaveSpeed(cSpin->value());
+  act->setNodeDistance(dSpin->value());
+  act->setTimeStep(tSpin->value());
+  act->setViscosity(uSpin->value());
+  act->setWrap(wrapCheck->isChecked());
+	emit activated(act);
 }

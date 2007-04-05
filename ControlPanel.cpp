@@ -9,11 +9,16 @@
 #include <QMessageBox>
 #include <QAction>
 
+#include <vector>
+
 #include "ControlPanel.h"
 #include "MapControls.h"
+#include "HAction.h"
 
 #include "MapPreview.h"
 #include "CreateMapDialog.h"
+
+using std::vector;
 
 ControlPanel::ControlPanel(QWidget* parent)
 	: QWidget(parent)
@@ -267,22 +272,18 @@ void ControlPanel::loadMap()
 						temp.height(), margin));
 			preview->setMap(manager->value("current"));
 
-			connect(randomFillControl, SIGNAL(activated(double, double)),
-					manager->value("current"), SLOT(randomFill(double, double)));
-			connect(clusterFillControl, SIGNAL(activated(double, double, short, short)),
-					manager->value("current"), SLOT(clusterFill(double, double, short, short)));
-			connect(clusterFilterControl, SIGNAL(activated(short)),
-					manager->value("current"), SLOT(clusterFilter(short)));
-			connect(alternateClusterFilterControl, SIGNAL(activated(short)),
-					manager->value("current"), SLOT(alternateClusterFilter(short)));
-			connect(liquidFilterControl, SIGNAL(activated(double, double, double, double, short, bool)),
-					manager->value("current"), SLOT(liquidFilter(double, double, double, double, short, bool)));
-			connect(smoothFilterControl, SIGNAL(activated(short, short, bool)),
-					manager->value("current"), SLOT(smoothFilter(short, short, bool)));
-			connect(walkerFilterControl, SIGNAL(activated(short, short, short, bool)),
-			    manager->value("current"), SLOT(walkerFilter(short, short, short, bool)));
-			connect(faultFilterControl, SIGNAL(activated(short, short, short, bool)),
-		      manager->value("current"), SLOT(faultingFilter(short, short, short, bool)));
+      vector<QWidget*> controls;
+      controls.push_back(randomFillControl);
+      controls.push_back(clusterFillControl);
+      controls.push_back(clusterFilterControl);
+      controls.push_back(alternateClusterFilterControl);
+      controls.push_back(liquidFilterControl);
+      controls.push_back(smoothFilterControl);
+      controls.push_back(walkerFilterControl);
+      controls.push_back(faultFilterControl);
+      for (int i = 0; i < controls.size(); ++i)
+        connect(controls[i], SIGNAL(activated(HAction*)),
+                manager->value("current"), SLOT(performHAction(HAction*)));
 
 			connect(manager->value("current"), SIGNAL(processingStarted()), this, SIGNAL(processingStarted()));
 			connect(manager->value("current"), SIGNAL(processingFinished()), this, SIGNAL(processingFinished()));
@@ -316,22 +317,18 @@ void ControlPanel::initNewMap(int width, int height, int margin)
 
 	preview->setMap(manager->value("current"));
 
-	connect(randomFillControl, SIGNAL(activated(double, double)),
-	        manager->value("current"), SLOT(randomFill(double, double)));
-	connect(clusterFillControl, SIGNAL(activated(double, double, short, short)),
-	        manager->value("current"), SLOT(clusterFill(double, double, short, short)));
-	connect(clusterFilterControl, SIGNAL(activated(short)),
-	        manager->value("current"), SLOT(clusterFilter(short)));
-	connect(alternateClusterFilterControl, SIGNAL(activated(short)),
-	        manager->value("current"), SLOT(alternateClusterFilter(short)));
-	connect(liquidFilterControl, SIGNAL(activated(double, double, double, double, short, bool)),
-	        manager->value("current"), SLOT(liquidFilter(double, double, double, double, short, bool)));
-	connect(smoothFilterControl, SIGNAL(activated(short, short, bool)),
-	        manager->value("current"), SLOT(smoothFilter(short, short, bool)));
-	connect(walkerFilterControl, SIGNAL(activated(short, short, short, bool)),
-	        manager->value("current"), SLOT(walkerFilter(short, short, short, bool)));
-	connect(faultFilterControl, SIGNAL(activated(short, short, short, bool)),
-          manager->value("current"), SLOT(faultingFilter(short, short, short, bool)));
+  vector<QWidget*> controls;
+  controls.push_back(randomFillControl);
+  controls.push_back(clusterFillControl);
+  controls.push_back(clusterFilterControl);
+  controls.push_back(alternateClusterFilterControl);
+  controls.push_back(liquidFilterControl);
+  controls.push_back(smoothFilterControl);
+  controls.push_back(walkerFilterControl);
+  controls.push_back(faultFilterControl);
+  for (int i = 0; i < controls.size(); ++i)
+    connect(controls[i], SIGNAL(activated(HAction*)),
+            manager->value("current"), SLOT(performHAction(HAction*)));
 
 	connect(manager->value("current"), SIGNAL(processingStarted()), this, SIGNAL(processingStarted()));
 	connect(manager->value("current"), SIGNAL(processingFinished()), this, SIGNAL(processingFinished()));

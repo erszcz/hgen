@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "HAction.h"
+
 class QSpinBox;
 
 class RandomFillControl : public QWidget
@@ -13,7 +15,7 @@ class RandomFillControl : public QWidget
 	RandomFillControl(QWidget* parent = 0);
 
 	signals:
-	void activated(double min, double max);
+	void activated(HAction* act);
 
 	private slots:
 	void activate();

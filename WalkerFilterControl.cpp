@@ -6,6 +6,7 @@
 #include <QGridLayout>
 
 #include "WalkerFilterControl.h"
+#include "HAction.h"
 
 WalkerFilterControl::WalkerFilterControl(QWidget* parent)
 	: QWidget(parent)
@@ -59,6 +60,11 @@ WalkerFilterControl::WalkerFilterControl(QWidget* parent)
 
 void WalkerFilterControl::activate()
 {
-	emit activated(countSpin->value(), incStepSpin->value(),
-	               decStepSpin->value(), wrapCheck->isChecked());
+  HAction* act = new HAction;
+  act->setType(HAction::walkerFilter);
+  act->setIterations(countSpin->value());
+  act->setIncStep(incStepSpin->value());
+  act->setDecStep(decStepSpin->value());
+  act->setWrap(wrapCheck->isChecked());
+	emit activated(act);
 }
