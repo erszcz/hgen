@@ -29,12 +29,14 @@ HeightmapCore::HeightmapCore(int height, int width, int margin)
 	this->margin = margin;
 
 	// inicjalizacja mapy
-	vector<double> tmp(realWidth, 0.);
-	map = vector<vector<double> >(realHeight, tmp);
+	//vector<double> tmp(realWidth, 0.);
+	//map = vector<vector<double> >(realHeight, tmp);
+  map = vector<vector<double> >(realHeight, vector<double>(realWidth, 0.));
 
 	// inicjalizacja maski (test)
-	vector<double> tmpm(width, 0.);
-	mask = vector<vector<double> >(height, tmpm);
+	//vector<double> tmpm(width, 0.);
+	//mask = vector<vector<double> >(height, tmpm);
+  mask = vector<vector<double> >(height, vector<double>(width, 0.));
 
   for (int i = 0; i < height; ++i)
     for (int j = 0; j < width; ++j)
@@ -56,6 +58,7 @@ HeightmapCore::HeightmapCore(const HeightmapCore& old)
 	this->margin = old.margin;
 
 	map = vector<vector<double> >(old.map);
+  mask = vector<vector<double> >(old.mask);
 }
 
 double HeightmapCore::getPixel(int x, int y) const
@@ -147,8 +150,6 @@ void HeightmapCore::alternateClusterFilter(short radius)
 {
 	if (radius > margin)
 		radius = margin;
-
-  int r = radius;
 
   vector<int> clusteringSequence;
 	for (int i = 0; i < height; ++i)
