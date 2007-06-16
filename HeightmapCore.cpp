@@ -57,22 +57,6 @@ HeightmapCore::HeightmapCore(const HeightmapCore& old)
 
 	map = vector<vector<double> >(old.map);
 }
-/*
-HeightmapCore::HeightmapCore(const HeightmapMatrixCore& hMatrixCore)
-{
-  margin = hMatrixCore.getMapMargin();
-  width = hMatrixCore.getMapDim();
-  realWidth = margin + width;
-  height = hMatrixCore.getMapDim();
-  realHeight = margin + height;
-
-	vector<double> tmp(realWidth, 0.);
-	map = vector<vector<double> >(realHeight, tmp);
-
-  for (int i = 0; i < width; ++i)
-    for (int j = 0; j < height; ++j)
-      setPixel(i, j, hMatrixCore.getPixel(i, j));     
-}*/
 
 double HeightmapCore::getPixel(int x, int y) const
 {
@@ -120,28 +104,6 @@ void HeightmapCore::randomFill(double min, double max)
   }
 }
 
-/*void HeightmapCore::clusterFill(double min, double max,
-                                short clusterChance, short radius)
-{
-	if (radius > margin)
-		radius = margin;
-	list<double> tmpList;
-	for (int i = margin; i <= realHeight - (margin + 1); ++i)
-		for (int j = margin; j <= realWidth - (margin + 1); ++j)
-			if (_random(0, 100) > clusterChance)
-				map[i][j] = map[i][j] + _random(min, max);
-			else {
-				for (short ii = -radius; ii <= radius; ++ii)
-					for (short jj = -radius; jj <= radius; ++jj)
-						tmpList.push_back(map[i+ii][j+jj]);
-				if ( fabs( *min_element(tmpList.begin(), tmpList.end()) ) >  *max_element(tmpList.begin(), tmpList.end()) )
-					map[i][j] = map[i][j] + *min_element(tmpList.begin(), tmpList.end());
-				else
-					map[i][j] = map[i][j] + *max_element(tmpList.begin(), tmpList.end());
-				tmpList.clear();
-			}
-}*/
-
 void HeightmapCore::clusterFill(double min, double max,
                                 short clusterChance, short radius)
 {
@@ -186,17 +148,19 @@ void HeightmapCore::alternateClusterFilter(short radius)
 	if (radius > margin)
 		radius = margin;
 
+  int r = radius;
+
   vector<int> clusteringSequence;
 	for (int i = 0; i < height; ++i)
 		for (int j = 0; j < width; ++j)
-      clusteringSequence.push_back(j + i*height);
+      clusteringSequence.push_back(j + i*width);
 
   random_shuffle(clusteringSequence.begin(), clusteringSequence.end());
 
   vector<int>::iterator it = clusteringSequence.begin();  
   while (it != clusteringSequence.end()) {
-    int i = (*it)/height + margin;
-    int j = (*it)%height + margin;
+    int i = (*it)/width + margin;
+    int j = (*it)%width + margin;
 
     //ustal kierunek
     int dir = rand()%4;
