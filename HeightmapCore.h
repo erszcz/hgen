@@ -12,10 +12,15 @@ using std::endl;
 using std::setw;
 // koniec
 
+typedef enum {HE_N, HE_E, HE_S, HE_W} Direction;
+
+//class HeightmapMatrixCore;
+
 class HeightmapCore {
 	public:
 	HeightmapCore(int height, int width, int margin = 1);
 	HeightmapCore(const HeightmapCore& old);
+  //HeightmapCore(const HeightmapMatrixCore& hMatrixCore);
 	~HeightmapCore() {;}
 
 	int getHeight() const { return height; }
@@ -50,6 +55,8 @@ class HeightmapCore {
 
 	void normalize();
 	void normalize(double max, double min);
+
+	void join(HeightmapCore & neighbour, Direction edge);
 
   bool hasMask();
 

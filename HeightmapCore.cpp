@@ -31,6 +31,14 @@ HeightmapCore::HeightmapCore(int height, int width, int margin)
 	// inicjalizacja mapy
 	vector<double> tmp(realWidth, 0.);
 	map = vector<vector<double> >(realHeight, tmp);
+
+	// inicjalizacja maski (test)
+	vector<double> tmpm(width, 0.);
+	mask = vector<vector<double> >(height, tmpm);
+
+  for (int i = 0; i < height; ++i)
+    for (int j = 0; j < width; ++j)
+      mask[i][j] = j/(double)width;
 }
 
 HeightmapCore::HeightmapCore(const HeightmapCore& old)
@@ -49,6 +57,22 @@ HeightmapCore::HeightmapCore(const HeightmapCore& old)
 
 	map = vector<vector<double> >(old.map);
 }
+/*
+HeightmapCore::HeightmapCore(const HeightmapMatrixCore& hMatrixCore)
+{
+  margin = hMatrixCore.getMapMargin();
+  width = hMatrixCore.getMapDim();
+  realWidth = margin + width;
+  height = hMatrixCore.getMapDim();
+  realHeight = margin + height;
+
+	vector<double> tmp(realWidth, 0.);
+	map = vector<vector<double> >(realHeight, tmp);
+
+  for (int i = 0; i < width; ++i)
+    for (int j = 0; j < height; ++j)
+      setPixel(i, j, hMatrixCore.getPixel(i, j));     
+}*/
 
 double HeightmapCore::getPixel(int x, int y) const
 {
@@ -489,6 +513,76 @@ double HeightmapCore::getMin() const
 
 void HeightmapCore::normalize() {
 	normalize(getMax(), getMin());
+}
+
+void HeightmapCore::join(HeightmapCore & neighbour, Direction edge) {
+	if ((getWidth() != neighbour.getWidth()) || (getHeight() != neighbour.getHeight()))
+		return;
+
+	int joinRange = (int)(height/3.);
+	if (! joinRange)
+		return;
+		
+	//cout << "join range: " << joinRange << endl;
+		
+	int neighbourWidth = neighbour.getWidth();
+	int neighbourHeight = neighbour.getHeight();
+	switch (edge)
+	{
+		case HE_E:
+		case HE_W:
+			for (int i = 0; i < height; ++i) {
+				double modifiedRange = joinRange*(0.5 + 0.5*pow(sin(2.*M_PI*i/height), 2));
+				for (int j = 0; j < modifiedRange; ++j) {
+					double selfW = 0.5 + (j + 1.)/2./modifiedRange;
+					double neighbourW = 1. - selfW;
+				
+					if (edge == HE_E) {
+						double newSelfVal = selfW*getPixel(width - 1 - j, i) + neighbourW*neighbour.getPixel(neighbourWidth - 1 - j, i);
+						double newNeighbourVal = selfW*neighbour.getPixel(j, i) + neighbourW*getPixel(j, i);			
+					
+						setPixel(width - 1 - j, i, newSelfVal);
+						neighbour.setPixel(j, i, newNeighbourVal);
+					}
+					else {
+						double newSelfVal = selfW*getPixel(j, i) + neighbourW*neighbour.getPixel(j, i);
+						double newNeighbourVal = selfW*neighbour.getPixel(neighbourWidth - 1 - j, i) + neighbourW*getPixel(neighbourWidth - 1 - j, i);			
+					
+						setPixel(j, i, newSelfVal);
+						neighbour.setPixel(neighbourWidth - 1 - j, i, newNeighbourVal);
+					}
+				}
+			}
+		
+			break;
+			
+		case HE_N:
+		case HE_S:
+			for (int j = 0; j < width; ++j) {
+				double modifiedRange = joinRange*(0.5 + 0.5*pow(sin(2.*M_PI*j/width), 2));
+				for (int i = 0; i < modifiedRange; ++i) {
+					double selfW = 0.5 + (i + 1.)/2./modifiedRange;
+					double neighbourW = 1. - selfW;
+				
+					if (edge == HE_S) {
+						double newSelfVal = selfW*getPixel(j, height - 1 - i) + neighbourW*neighbour.getPixel(j, neighbourHeight - 1 - i);
+						double newNeighbourVal = selfW*neighbour.getPixel(j, i) + neighbourW*getPixel(j, i);			
+					
+						setPixel(j, height - 1 - i, newSelfVal);
+						neighbour.setPixel(j, i, newNeighbourVal);
+					}
+					else {
+						double newSelfVal = selfW*getPixel(j, i) + neighbourW*neighbour.getPixel(j, i);
+						double newNeighbourVal = selfW*neighbour.getPixel(j, neighbourHeight - 1 - i) + neighbourW*getPixel(j, neighbourHeight - 1 - i);			
+					
+						setPixel(j, i, newSelfVal);
+						neighbour.setPixel(j, neighbourHeight - 1 - i, newNeighbourVal);
+					}
+				}
+			}
+		
+			break;
+	}
 }
 
 void HeightmapCore::normalize(double max, double min)
