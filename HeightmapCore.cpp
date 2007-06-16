@@ -66,16 +66,34 @@ bool HeightmapCore::setPixel(int x, int y, double value)
 
 void HeightmapCore::flatFill(double v)
 {
-	for (int i = margin; i < margin + height; ++i)
-		for (int j = margin; j < margin + width; ++j)
-			map[i][j] = v;
+  if (hasMask()) 
+  {
+    for (int i = margin; i < margin + height; ++i)
+      for (int j = margin; j < margin + width; ++j)
+        map[i][j] = mask[i - margin][j - margin]*v;
+  }
+  else
+  {
+    for (int i = margin; i < margin + height; ++i)
+      for (int j = margin; j < margin + width; ++j)
+        map[i][j] = v;
+  }
 }
 
 void HeightmapCore::randomFill(double min, double max)
 {
-	for (int i = margin; i <= realHeight - (margin + 1); ++i)
-		for (int j = margin; j <= realWidth - (margin + 1); ++j)
-			map[i][j] = map[i][j] + _random(min, max);
+  if (hasMask()) 
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+        map[i][j] = map[i][j] + _random(min, max)*mask[i - margin][j - margin];
+  }
+  else
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+        map[i][j] = map[i][j] + _random(min, max);
+  }
 }
 
 /*void HeightmapCore::clusterFill(double min, double max,
@@ -105,15 +123,29 @@ void HeightmapCore::clusterFill(double min, double max,
 {
 	if (radius > margin)
 		radius = margin;
-	for (int i = margin; i <= realHeight - (margin + 1); ++i)
-		for (int j = margin; j <= realWidth - (margin + 1); ++j)
-			if (_random(0, 100) > clusterChance)
-				map[i][j] = map[i][j] + _random(min, max);
-			else if ( fabs(map[i][j - 1]) > fabs(map[i - 1][j]) )
-				map[i][j] += map[i][j - 1];
-			else
-				map[i][j] += map[i - 1][j];
-				
+
+  if (hasMask()) 
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+        if (_random(0, 100) > clusterChance)
+          map[i][j] = map[i][j] + _random(min, max)*mask[i - margin][j - margin];
+        else if ( fabs(map[i][j - 1]) > fabs(map[i - 1][j]) )
+          map[i][j] += map[i][j - 1]*mask[i - margin][j - margin];
+        else
+          map[i][j] += map[i - 1][j]*mask[i - margin][j - margin];
+  }
+  else
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+        if (_random(0, 100) > clusterChance)
+          map[i][j] = map[i][j] + _random(min, max);
+        else if ( fabs(map[i][j - 1]) > fabs(map[i - 1][j]) )
+          map[i][j] += map[i][j - 1];
+        else
+          map[i][j] += map[i - 1][j];
+  }
 }
 
 /**
@@ -186,9 +218,21 @@ void HeightmapCore::alternateClusterFilter(short radius)
     }
 
     double src = map[iSrc][jSrc];
-    for (int ii = -radius; ii <= radius; ++ii)
-      for (int jj = -radius; jj <= radius; ++jj) 
-        map[i + ii][j + jj] = (map[i + ii][j + jj] + src)/2.;
+    if (hasMask()) 
+    {
+      double srcWeight = 0.5;
+      for (int ii = -radius; ii <= radius; ++ii)
+        for (int jj = -radius; jj <= radius; ++jj) {
+          srcWeight = 0.5*mask[i + ii - margin][j + jj - margin];
+          map[i + ii][j + jj] = (1. - srcWeight)*map[i + ii][j + jj] + srcWeight*src;
+        }
+    }
+    else
+    {
+      for (int ii = -radius; ii <= radius; ++ii)
+        for (int jj = -radius; jj <= radius; ++jj) 
+          map[i + ii][j + jj] = (map[i + ii][j + jj] + src)/2.;
+    }
 
     it++;
   }
@@ -198,6 +242,7 @@ void HeightmapCore::clusterFilter(int radius)
 {
 	if (radius > margin)
 		radius = margin;
+
 	list<double> tmpList;
 	for (int i = margin; i <= realHeight - (margin + 1); ++i)
 	{
@@ -208,12 +253,22 @@ void HeightmapCore::clusterFilter(int radius)
 			for (short ii = -radius; ii <= radius; ++ii)
 				for (short jj = -radius; jj <= radius; ++jj)
 					tmpList.push_back(map[i+ii][j+jj]);
+
 			if ( fabs( *min_element(tmpList.begin(), tmpList.end()) ) > fabs( *max_element(tmpList.begin(), tmpList.end()) ) )
 				tmp = *min_element(tmpList.begin(), tmpList.end());
 			else
 				tmp = *max_element(tmpList.begin(), tmpList.end());
-			map[i][j] = (map[i][j] + tmp) / 2;
-		}
+
+      if (hasMask()) 
+      {
+        double tmpWeight = 0.5*mask[i - margin][j - margin];
+        map[i][j] = (1. - tmpWeight)*map[i][j] + tmpWeight*tmp;
+      }
+      else
+      {
+        map[i][j] = (map[i][j] + tmp) / 2;
+      }
+    }
 	}
 }
 
@@ -226,14 +281,30 @@ void HeightmapCore::liquidFilter(double c, double d, double t,
 	double coefB = ((u*t-2)/(u*t+2));
 	double coefC = ((2*c*c*t*t)/(d*d))/(u*t+2);
 
-	for (int i = margin; i <= realHeight - (margin + 1); ++i)
-		for (int j = margin; j <= realWidth - (margin + 1); ++j)
-		{
-			double p1 = coefA * map[i][j];
-			double p2 = coefB * buffer[i][j];
-			double p3 = coefC * (map[i+1][j] + map[i-1][j] + map[i][j+1] + map[i][j-1]);
-			buffer[i][j] = p1 + p2 + p3;
-		}
+  if (hasMask()) 
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+      {
+        double p1 = coefA * map[i][j];
+        double p2 = coefB * buffer[i][j];
+        double p3 = coefC * (map[i+1][j] + map[i-1][j] + map[i][j+1] + map[i][j-1]);
+
+        double w = mask[i - margin][j - margin];
+        buffer[i][j] = (1 - w)*buffer[i][j] + w*(p1 + p2 + p3);
+      }
+  }
+  else
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+      {
+        double p1 = coefA * map[i][j];
+        double p2 = coefB * buffer[i][j];
+        double p3 = coefC * (map[i+1][j] + map[i-1][j] + map[i][j+1] + map[i][j-1]);
+        buffer[i][j] = p1 + p2 + p3;
+      }
+  }
 
 	map.swap(buffer);
 
@@ -248,17 +319,34 @@ void HeightmapCore::smoothFilter(short radius, bool wrap)
 	
 	double div = ((2*radius+1)*(2*radius+1));
 
-	for (int i = margin; i <= realHeight - (margin + 1); ++i)
-		for (int j = margin; j <= realWidth - (margin + 1); ++j)
-		{
-			double temp = 0;
+  if (hasMask()) 
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+      {
+        double temp = 0;
 
-			for (short ii = -radius; ii <= radius; ++ii)
-				for (short jj = -radius; jj <= radius; ++jj)
-					temp += map[i+ii][j+jj];
+        for (short ii = -radius; ii <= radius; ++ii)
+          for (short jj = -radius; jj <= radius; ++jj)
+            temp += map[i+ii][j+jj];
 
-			map[i][j] = temp / div;
-		}
+        map[i][j] = mask[i - margin][j - margin] * temp / div;
+      }
+  }
+  else
+  {
+    for (int i = margin; i <= realHeight - (margin + 1); ++i)
+      for (int j = margin; j <= realWidth - (margin + 1); ++j)
+      {
+        double temp = 0;
+
+        for (short ii = -radius; ii <= radius; ++ii)
+          for (short jj = -radius; jj <= radius; ++jj)
+            temp += map[i+ii][j+jj];
+
+        map[i][j] = temp / div;
+      }
+  }
 
 	if (wrap)
 		wrapEdges();
@@ -281,7 +369,10 @@ void HeightmapCore::walkerFilter(int incStep, int decStep, bool wrap)
 
 	for(int l = 0; l < lifeSpan; ++l)
 	{
-		map[y][x] += step;
+    if (hasMask())
+  		map[y][x] += mask[y - margin][x - margin]*step;
+    else
+      map[y][x] += step;
 
 		int direction = int(_random(0, 4));
 		switch (direction)
@@ -349,7 +440,10 @@ void HeightmapCore::faultingFilter(int incStep, int decStep, bool wrap)
 				if (posY >= width && wrap)  posY -= width;
 				else if (posY >= width)     continue;
 
-				map[margin+posY][margin+posX] += step;
+        if (hasMask())
+				  map[margin+posY][margin+posX] += mask[posY][posX]*step;
+        else
+				  map[margin+posY][margin+posX] += step;
 			}
 		}
 
@@ -410,6 +504,11 @@ void HeightmapCore::normalize(double max, double min)
 				//map[i][j] = floor(map[i][j] * 255);
 			}
 	}
+}
+
+bool HeightmapCore::hasMask()
+{
+  return (mask.size() == (int)height && mask[0].size() == (int)width);
 }
 
 double HeightmapCore::_random(double min, double max) const

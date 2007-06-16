@@ -51,6 +51,8 @@ class HeightmapCore {
 	void normalize();
 	void normalize(double max, double min);
 
+  bool hasMask();
+
 	// funkcja tymczasowa. na dluzsza mete trzeba bedzie overloadnac << dla plikow i, byc moze, dla konsoli
 	void print(double val) const
 	{
@@ -81,7 +83,8 @@ class HeightmapCore {
 	int height, realHeight;
 	int width, realWidth;
 	int margin;
-	vector<vector<double> > map;
+  vector<vector<double> > map;
+  vector<vector<double> > mask;
 };
 
 #endif
