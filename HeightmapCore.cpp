@@ -107,33 +107,43 @@ void HeightmapCore::randomFill(double min, double max)
   }
 }
 
-void HeightmapCore::clusterFill(double min, double max,
-                                short clusterChance, short radius)
+void HeightmapCore::clusterFill(double min, double max, short clusterChance, short radius)
 {
 	if (radius > margin)
 		radius = margin;
 
-  if (hasMask()) 
-  {
-    for (int i = margin; i <= realHeight - (margin + 1); ++i)
-      for (int j = margin; j <= realWidth - (margin + 1); ++j)
-        if (_random(0, 100) > clusterChance)
-          map[i][j] = map[i][j] + _random(min, max)*mask[i - margin][j - margin];
-        else if ( fabs(map[i][j - 1]) > fabs(map[i - 1][j]) )
-          map[i][j] += map[i][j - 1]*mask[i - margin][j - margin];
-        else
-          map[i][j] += map[i - 1][j]*mask[i - margin][j - margin];
-  }
-  else
-  {
-    for (int i = margin; i <= realHeight - (margin + 1); ++i)
-      for (int j = margin; j <= realWidth - (margin + 1); ++j)
-        if (_random(0, 100) > clusterChance)
-          map[i][j] = map[i][j] + _random(min, max);
-        else if ( fabs(map[i][j - 1]) > fabs(map[i - 1][j]) )
-          map[i][j] += map[i][j - 1];
-        else
-          map[i][j] += map[i - 1][j];
+  vector<int> sequence;
+	for (int i = 0; i < height; ++i)
+		for (int j = 0; j < width; ++j)
+      sequence.push_back(j + i*width);
+
+  random_shuffle(sequence.begin(), sequence.end());
+
+  vector<int>::iterator it = sequence.begin();  
+  while (it != sequence.end()) {
+    int i = (*it)/width + margin;
+    int j = (*it)%width + margin;
+
+    if (hasMask()) 
+    {
+      if (_random(0, 100) > clusterChance)
+        map[i][j] = map[i][j] + _random(min, max)*mask[i - margin][j - margin];
+      else if ( fabs(map[i][j - 1]) > fabs(map[i - 1][j]) )
+        map[i][j] += map[i][j - 1]*mask[i - margin][j - margin];
+      else
+        map[i][j] += map[i - 1][j]*mask[i - margin][j - margin];
+    }
+    else
+    {
+      if (_random(0, 100) > clusterChance)
+        map[i][j] = map[i][j] + _random(min, max);
+      else if ( fabs(map[i][j - 1]) > fabs(map[i - 1][j]) )
+        map[i][j] += map[i][j - 1];
+      else
+        map[i][j] += map[i - 1][j];
+    }
+
+    it++;
   }
 }
 
@@ -305,40 +315,47 @@ void HeightmapCore::smoothFilter(short radius, bool wrap)
 {
 	if (radius > margin)
 		radius = margin;
-	
+
 	double div = ((2*radius+1)*(2*radius+1));
 
-  if (hasMask()) 
-  {
-    for (int i = margin; i <= realHeight - (margin + 1); ++i)
-      for (int j = margin; j <= realWidth - (margin + 1); ++j)
-      {
-        double temp = 0;
+  vector<int> sequence;
+	for (int i = 0; i < height; ++i)
+		for (int j = 0; j < width; ++j)
+      sequence.push_back(j + i*width);
 
-        for (short ii = -radius; ii <= radius; ++ii)
-          for (short jj = -radius; jj <= radius; ++jj)
-            temp += map[i+ii][j+jj];
+  random_shuffle(sequence.begin(), sequence.end());
 
-        map[i][j] = mask[i - margin][j - margin] * temp / div;
-      }
-  }
-  else
-  {
-    for (int i = margin; i <= realHeight - (margin + 1); ++i)
-      for (int j = margin; j <= realWidth - (margin + 1); ++j)
-      {
-        double temp = 0;
+  vector<int>::iterator it = sequence.begin();  
+  while (it != sequence.end()) {
+    int i = (*it)/width + margin;
+    int j = (*it)%width + margin;
 
-        for (short ii = -radius; ii <= radius; ++ii)
-          for (short jj = -radius; jj <= radius; ++jj)
-            temp += map[i+ii][j+jj];
+    double temp = 0;
 
-        map[i][j] = temp / div;
-      }
+    for (short ii = -radius; ii <= radius; ++ii)
+      for (short jj = -radius; jj <= radius; ++jj)
+        temp += map[i+ii][j+jj];
+
+    if (hasMask()) 
+      map[i][j] = mask[i - margin][j - margin] * temp / div;
+    else
+      map[i][j] = temp / div;
+
+    it++;
   }
 
 	if (wrap)
 		wrapEdges();
+}
+
+//nie skonczone, ani sprawdzone!!!
+void HeightmapCore::terraceFilter(short levels)
+{
+	double min = getMin();
+	double max = getMax();
+	for (int i = margin; i <= realHeight - (margin + 1); ++i)
+		for (int j = margin; j <= realWidth - (margin + 1); ++j)
+			map[i][j] = round((map[i][j] - min)/(max - min)*levels)/levels*(max - min) + min;
 }
 
 void HeightmapCore::walkerFilter(int incStep, int decStep, bool wrap)
