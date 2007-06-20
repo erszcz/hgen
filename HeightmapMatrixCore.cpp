@@ -159,18 +159,18 @@ void HeightmapMatrixCore::alternateClusterFilter(short radius)
   importHeightmapCore(hMapCore);
 }
 
-void HeightmapMatrixCore::liquidFilter(double c, double d, double t, double u, short iters, bool wrap)
+void HeightmapMatrixCore::liquidFilter(double c, double d, double t, double u, bool wrap)
 {
   HeightmapCore hMapCore = exportHeightmapCore();
-  hMapCore.liquidFilter(c, d, t, u, iters, wrap);
+  hMapCore.liquidFilter(c, d, t, u, wrap);
 
   importHeightmapCore(hMapCore);
 }
 
-void HeightmapMatrixCore::smoothFilter(short iters, short radius, bool wrap)
+void HeightmapMatrixCore::smoothFilter(short radius, bool wrap)
 {
   HeightmapCore hMapCore = exportHeightmapCore();
-  hMapCore.smoothFilter(iters, radius, wrap);
+  hMapCore.smoothFilter(radius, wrap);
 
   importHeightmapCore(hMapCore);
 }

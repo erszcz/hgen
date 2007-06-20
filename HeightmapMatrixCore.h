@@ -46,9 +46,9 @@ class HeightmapMatrixCore {
 	void clusterFilter(short radius = 1);
 	void alternateClusterFilter(short radius = 1);
 
-	void liquidFilter(double c = 100., double d = 10., double t = .033, double u = 100., short iters = 500, bool wrap = true);
+	void liquidFilter(double c = 100., double d = 10., double t = .033, double u = 100., bool wrap = true);
 
-	void smoothFilter(short iters = 250, short radius = 1, bool wrap = true);
+	void smoothFilter(short radius = 1, bool wrap = true);
 
 	void terraceFilter(short levels);
 
