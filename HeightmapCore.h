@@ -40,10 +40,10 @@ class HeightmapCore {
 
 	void alternateClusterFilter(short radius = 0);
 
-	void liquidFilter(double c = 100., double d = 10., double t = .033,
-	                  double u = 100., bool wrap = true);
+	void liquidFilter(double c = 100., double d = 10., double t = .033, double u = 100., bool wrap = true);
 
 	void smoothFilter(short radius = 1, bool wrap = true);
+	void terraceFilter(short levels);
 
 	void walkerFilter(int incStep, int decStep, bool wrap);
 
