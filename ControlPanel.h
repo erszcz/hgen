@@ -18,7 +18,7 @@ class SmoothFilterControl;
 class WalkerFilterControl;
 class FaultFilterControl;
 
-class MapPreview;
+class ScrollMapPreview;
 class Heightmap;
 
 class ControlPanel : public QWidget
@@ -79,7 +79,7 @@ class ControlPanel : public QWidget
 	WalkerFilterControl*  walkerFilterControl;
 	FaultFilterControl*   faultFilterControl;
 
-	MapPreview* preview;
+	ScrollMapPreview* preview;
 
 	QMap<QString, Heightmap*>* manager;
 };

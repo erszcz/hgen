@@ -19,7 +19,6 @@ MapPreview::MapPreview(QWidget* parent)
 {
 	gen = 0;
 	setAttribute(Qt::WA_StaticContents);
-	setFixedSize(600, 600);
 
 	setMouseTracking(true);
 }
@@ -36,11 +35,9 @@ void MapPreview::setMap(Heightmap* hgen)
 
 void MapPreview::paintEvent(QPaintEvent* /*event*/)
 {
-	QPainter painter(this);
-	painter.setBackground(QBrush(Qt::Dense1Pattern));
-	painter.eraseRect(rect());
-	if(gen)
+	if (gen)
 	{
+	  QPainter painter(this);
 		QPixmap temp = QPixmap::fromImage(gen->getImage());
 		painter.drawPixmap(temp.rect(), temp, temp.rect());
 	}

@@ -15,7 +15,7 @@
 #include "MapControls.h"
 #include "HAction.h"
 
-#include "MapPreview.h"
+#include "ScrollMapPreview.h"
 #include "CreateMapDialog.h"
 
 using std::vector;
@@ -23,7 +23,7 @@ using std::vector;
 ControlPanel::ControlPanel(QWidget* parent)
 	: QWidget(parent)
 {
-	preview = new MapPreview;
+	preview = new ScrollMapPreview;
 	manager = new QMap<QString, Heightmap*>;
 
 	createMainLayout();
