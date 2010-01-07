@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstdio>
 #include <cmath>
 #include <ctime>
 #include <iostream>
@@ -40,7 +41,8 @@ HeightmapCore::HeightmapCore(int height, int width, int margin)
 
   for (int i = 0; i < height; ++i)
     for (int j = 0; j < width; ++j)
-      mask[i][j] = j/(double)width;
+  //    mask[i][j] = j/(double)width;
+      mask[i][j] = 1;
 }
 
 HeightmapCore::HeightmapCore(const HeightmapCore& old)
