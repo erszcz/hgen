@@ -1,4 +1,4 @@
-CXX  = g++ -ansi -Wall -pedantic -O2
+CXX = g++ -ansi -Wall -pedantic -O2
 
 hmap: HeightmapCore.o libhmap.so
 
