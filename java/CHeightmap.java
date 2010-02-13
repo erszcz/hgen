@@ -1,5 +1,11 @@
 public class CHeightmap implements Heightmap
 {
+  public static void main (String[] args)
+  {
+    Heightmap hmap = new CHeightmap(10, 10);
+    hmap.getHeight();
+  }
+
   public CHeightmap(int height, int width) {
     this(height, width, 1);
   }
