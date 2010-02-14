@@ -34,5 +34,5 @@ interface Heightmap
   public void normalize();
   public void normalize(double max, double min);
 
-  public boolean hasMask();
+  public boolean isMasked();
 }

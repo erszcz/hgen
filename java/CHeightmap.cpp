@@ -1,157 +1,159 @@
 #include <jni.h>
+#include <new>
 #include "../HeightmapCore.h"
 
 #include <cstdio>
 
+jfieldID FID_CHeightmap_peer;
+
+HeightmapCore* self2hmap(JNIEnv * env, jobject self)
+{
+  return (HeightmapCore*)(env->GetLongField(self, FID_CHeightmap_peer));
+}
+
 // to match the signatures expected by JVM
 extern "C" {
 
-JNIEXPORT jint JNICALL Java_CHeightmap_getHeight(JNIEnv *, jobject)
+JNIEXPORT jint JNICALL Java_CHeightmap_getHeight
+  (JNIEnv * env, jobject self)
 {
-  printf("Astounding - it works!\n");
-  return 0;
+  return self2hmap(env, self)->getHeight();
 }
 
-JNIEXPORT jint JNICALL Java_CHeightmap_getWidth(JNIEnv *, jobject)
+JNIEXPORT jint JNICALL Java_CHeightmap_getWidth
+  (JNIEnv * env, jobject self)
 {
-  // stub
-  return 0;
+  return self2hmap(env, self)->getWidth();
 }
 
 JNIEXPORT jint JNICALL Java_CHeightmap_getMargin
-  (JNIEnv *, jobject)
+  (JNIEnv * env, jobject self)
 {
-  // stub
-  return 0;
+  return self2hmap(env, self)->getMargin();
 }
 
 JNIEXPORT jdouble JNICALL Java_CHeightmap_getPixel
-  (JNIEnv *, jobject, jint, jint)
+  (JNIEnv * env, jobject self, jint x, jint y)
 {
-  // stub
-  return 0.0;
+  return self2hmap(env, self)->getPixel(x, y);
 }
 
 JNIEXPORT jdouble JNICALL Java_CHeightmap_getMax
-  (JNIEnv *, jobject)
+  (JNIEnv * env, jobject self)
 {
-  // stub
-  return 0.0;
+  return self2hmap(env, self)->getMax();
 }
 
 JNIEXPORT jdouble JNICALL Java_CHeightmap_getMin
-  (JNIEnv *, jobject)
+  (JNIEnv * env, jobject self)
 {
-  // stub
-  return 0.0;
+  return self2hmap(env, self)->getMin();
 }
 
 JNIEXPORT jboolean JNICALL Java_CHeightmap_setPixel
-  (JNIEnv *, jobject, jint, jint, jdouble)
+  (JNIEnv * env, jobject self, jint x, jint y, jdouble val)
 {
-  // stub
-  return false;
+  return self2hmap(env, self)->setPixel(x, y, val);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_flatFill
-  (JNIEnv *, jobject, jdouble)
+  (JNIEnv * env, jobject self, jdouble val)
 {
-  // stub
-  return;
+  self2hmap(env, self)->flatFill(val);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_randomFill
-  (JNIEnv *, jobject, jdouble, jdouble)
+  (JNIEnv * env, jobject self, jdouble min, jdouble max)
 {
-  // stub
-  return;
+  self2hmap(env, self)->randomFill(min, max);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_clusterFill
-  (JNIEnv *, jobject, jdouble, jdouble, jshort, jshort)
+  (JNIEnv * env, jobject self,
+   jdouble min, jdouble max, jshort clusterChance, jshort radius)
 {
-  // stub
-  return;
+  self2hmap(env, self)->clusterFill(min, max, clusterChance, radius);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_clusterFilter
-  (JNIEnv *, jobject, jint)
+  (JNIEnv * env, jobject self, jint radius)
 {
-  // stub
-  return;
+  self2hmap(env, self)->clusterFilter(radius);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_alternateClusterFilter
-  (JNIEnv *, jobject, jshort)
+  (JNIEnv * env, jobject self, jshort radius)
 {
-  // stub
-  return;
+  self2hmap(env, self)->alternateClusterFilter(radius);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_liquidFilter
-  (JNIEnv *, jobject, jdouble, jdouble, jdouble, jdouble, jboolean)
+  (JNIEnv * env, jobject self,
+   jdouble c, jdouble d, jdouble t, jdouble u, jboolean wrap)
 {
-  // stub
-  return;
+  self2hmap(env, self)->liquidFilter(c, d, t, u, wrap);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_smoothFilter
-  (JNIEnv *, jobject, jshort, jboolean)
+  (JNIEnv * env, jobject self, jshort radius, jboolean wrap)
 {
-  // stub
-  return;
+  self2hmap(env, self)->smoothFilter(radius, wrap);
 }
 
-JNIEXPORT void JNICALL Java_CHeightmap_terraceFilter(JNIEnv *, jobject, jshort)
+JNIEXPORT void JNICALL Java_CHeightmap_terraceFilter
+  (JNIEnv * env, jobject self, jshort levels)
 {
-  // stub
-  return;
+  self2hmap(env, self)->terraceFilter(levels);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_walkerFilter
-  (JNIEnv *, jobject, jint, jint, jboolean)
+  (JNIEnv * env, jobject self, jint inc, jint dec, jboolean wrap)
 {
-  // stub
-  return;
+  self2hmap(env, self)->walkerFilter(inc, dec, wrap);
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_faultingFilter
-  (JNIEnv *, jobject, jint, jint, jboolean)
+  (JNIEnv * env, jobject self, jint inc, jint dec, jboolean wrap)
 {
-  // stub
-  return;
+  self2hmap(env, self)->faultingFilter(inc, dec, wrap);
 }
 
-JNIEXPORT void JNICALL Java_CHeightmap_normalize__(JNIEnv *, jobject)
+JNIEXPORT void JNICALL Java_CHeightmap_normalize__
+  (JNIEnv * env, jobject self)
 {
-  // stub
-  return;
+  self2hmap(env, self)->normalize();
 }
 
 JNIEXPORT void JNICALL Java_CHeightmap_normalize__DD
-  (JNIEnv *, jobject, jdouble, jdouble)
+  (JNIEnv * env, jobject self, jdouble max, jdouble min)
 {
-  // stub
-  return;
+  self2hmap(env, self)->normalize(max, min);
 }
 
-JNIEXPORT jboolean JNICALL Java_CHeightmap_hasMask(JNIEnv *, jobject)
+JNIEXPORT jboolean JNICALL Java_CHeightmap_isMasked
+  (JNIEnv * env, jobject self)
 {
-  // stub
-  return 0;
+  return self2hmap(env, self)->hasMask();
 }
+
+JNIEXPORT jboolean JNICALL Java_CHeightmap_initIDs(JNIEnv * env, jclass cls)
+{
+  if ( NULL == (FID_CHeightmap_peer = env->GetFieldID(cls, "_peer", "J")) )
+    return false;
+  return true;
+}
+
 
 JNIEXPORT jlong JNICALL Java_CHeightmap_create
-  (JNIEnv *, jobject, jint, jint, jint)
+  (JNIEnv * env, jobject self, jint height, jint width, jint margin)
 {
-  // stub
-  return 0L;
+  return (jlong)(new(std::nothrow) HeightmapCore(height, width, margin));
 }
 
-JNIEXPORT void JNICALL Java_CHeightmap_destroy(JNIEnv *, jobject, jlong)
+JNIEXPORT void JNICALL Java_CHeightmap_destroy
+  (JNIEnv * env, jobject self, jlong peer)
 {
-  // stub
-  return;
+  delete (HeightmapCore*)peer;
 }
 
 } // extern "C"

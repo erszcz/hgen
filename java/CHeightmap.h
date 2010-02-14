@@ -161,11 +161,19 @@ JNIEXPORT void JNICALL Java_CHeightmap_normalize__DD
 
 /*
  * Class:     CHeightmap
- * Method:    hasMask
+ * Method:    isMasked
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_CHeightmap_hasMask
+JNIEXPORT jboolean JNICALL Java_CHeightmap_isMasked
   (JNIEnv *, jobject);
+
+/*
+ * Class:     CHeightmap
+ * Method:    initIDs
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_CHeightmap_initIDs
+  (JNIEnv *, jclass);
 
 /*
  * Class:     CHeightmap

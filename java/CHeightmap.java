@@ -1,9 +1,37 @@
+import java.io.*;
+
 public class CHeightmap implements Heightmap
 {
   public static void main (String[] args)
   {
-    Heightmap hmap = new CHeightmap(10, 10);
-    hmap.getHeight();
+    // initialize map
+    Heightmap hm = new CHeightmap(10, 10);
+    System.out.printf("Height, width, margin: %d, %d, %d\n",
+      hm.getHeight(), hm.getWidth(), hm.getMargin());
+
+    // fill and process
+    hm.flatFill(50);
+    for (int i = 0; i < 5; i++)
+      hm.walkerFilter(10, 10);
+    hm.normalize(0, 256);
+
+    ((CHeightmap)hm).saveAsText("dump10x10.txt");
+  }
+
+  // for testing
+  public void saveAsText(String fname) {
+    try {
+      PrintStream out = new PrintStream(fname);
+      for (int i = 0; i < getHeight(); i++)
+      {
+        for (int j = 0; j < getWidth(); j++)
+          out.printf("%6.2f", getPixel(i, j));
+        out.println();
+      }
+      out.close();
+    } catch (FileNotFoundException e) {
+      System.err.printf("Can't create/write file: %s\n", fname);
+    }
   }
 
   public CHeightmap(int height, int width) {
@@ -12,6 +40,7 @@ public class CHeightmap implements Heightmap
 
   public CHeightmap(int height, int width, int margin) {
     _peer = create(height, width, margin);
+    if (_peer == 0) throw new RuntimeException("can't create native instance");
   }
 
   // Heightmap interface
@@ -63,10 +92,12 @@ public class CHeightmap implements Heightmap
   public native void normalize();
   public native void normalize(double max, double min);
 
-  public native boolean hasMask();
+  public native boolean isMasked();
 
   // native interface stuff
   private long _peer;  // pointer to native counterpart
+
+  private static native boolean initIDs();
 
   private native long create(int height, int width, int margin);
   private native void destroy(long peer);
@@ -83,5 +114,7 @@ public class CHeightmap implements Heightmap
   static
   {
     System.loadLibrary("hmap");
+    if (! initIDs())
+      throw new RuntimeException("can't get native object address");
   }
 }

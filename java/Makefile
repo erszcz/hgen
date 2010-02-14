@@ -1,5 +1,5 @@
-CXX = g++ -ansi -Wall -pedantic -O2
-INCLUDE = -I /usr/lib/jvm/java-6-openjdk/include/
+CXX = g++ -ansi -Wall -pedantic -O2 -fPIC -c 
+INCLUDE = -I ../ -I /usr/lib/jvm/java-6-openjdk/include/
 
 hmap: libhmap.so
 #	ln -s libhmap.so.1.0 libhmap.so; \
@@ -10,11 +10,14 @@ hmap: libhmap.so
 # Linking with ld leads to __dso_handle symbol not found in resulting library.
 # Java loader complains about it missing.
 
-libhmap.so: CHeightmap.o
-	g++ -shared -o libhmap.so CHeightmap.o
+libhmap.so: HeightmapCore.o CHeightmap.o
+	g++ -shared -o libhmap.so HeightmapCore.o CHeightmap.o
 
 CHeightmap.o: CHeightmap.h CHeightmap.cpp
-	$(CXX) $(INCLUDE) -fPIC -I../ -c CHeightmap.cpp
+	$(CXX) $(INCLUDE) CHeightmap.cpp
+
+HeightmapCore.o: ../HeightmapCore.h ../HeightmapCore.cpp
+	$(CXX) $(INCLUDE) ../HeightmapCore.cpp
 
 clean:
 	rm *.o
