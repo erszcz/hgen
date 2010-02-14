@@ -1,0 +1,91 @@
+<project name="hgen" default="dist" basedir=".">
+  <description>java interface for native heightmap generation</description>
+  
+  <!-- set global properties for this build -->
+  <property name="src"    location="jsrc" />
+  <property name="build"  location="jbuild" />
+  <property name="dist"   location="jdist" />
+
+  <property name="javah"  location="/usr/bin/javah" />
+  <property name="make"   location="/usr/bin/make" />
+
+
+  <target name="native-header">
+    <javac srcdir="${src}" destdir="${build}">
+      <include name="lavrin/hgen/CHeightmap.java" />
+    </javac>
+    <exec executable="${javah}">
+      <arg value="-classpath" />
+      <arg value="${build}" />
+      <arg value="lavrin.hgen.CHeightmap" />
+    </exec>
+  </target>
+
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+
+  <target name="native" depends="init">
+    <exec executable="${make}">
+      <arg value="hmap" />
+    </exec>
+  </target>
+
+
+  <target name="compile" depends="native"
+    description="compile the source" >
+
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}"/>
+  </target>
+
+
+  <target name="dist" depends="compile" description="generate the distribution">
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/lib" />
+
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/lib/MyProject-${DSTAMP}.jar" basedir="${build}"
+      manifest="manifest.txt" />
+  </target>
+
+
+  <!-- test -->
+  <target name="test-hmap" depends="init">
+    <java fork="true"
+      classpath="${dist}/lib/MyProject-${DSTAMP}.jar"
+      classname="lavrin.hgen.CHeightmap">
+      <jvmarg value="-Djava.library.path=." />
+    </java>
+  </target>
+
+
+<!--   <target name="test-viewer" depends="init"> -->
+<!--     <java fork="true" -->
+<!--       classpath="${dist}/lib/MyProject-${DSTAMP}.jar" -->
+<!--       classname="lavrin.hgen.CHeightmap"> -->
+<!--       <jvmarg value="-Djava.library.path=." /> -->
+<!--     </java> -->
+<!--   </target> -->
+
+
+  <!-- clean -->
+  <target name="make-clean-all">
+    <exec executable="${make}">
+      <arg value="clean-all" />
+    </exec>
+  </target>
+
+
+  <target name="clean" description="clean up" depends="make-clean-all">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}" />
+    <delete dir="${dist}" />
+  </target>
+</project>

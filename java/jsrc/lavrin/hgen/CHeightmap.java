@@ -1,3 +1,5 @@
+package lavrin.hgen;
+
 import java.io.*;
 
 public class CHeightmap implements Heightmap
@@ -16,6 +18,16 @@ public class CHeightmap implements Heightmap
     hm.normalize(0, 256);
 
     ((CHeightmap)hm).saveAsText("dump10x10.txt");
+  }
+
+  public int[][] asArray() {
+    int w = getWidth();
+    int h = getHeight();
+    int[][] map = new int[h][w];
+    for (int i = 0; i < h; i++)
+      for (int j = 0; j < w; j++)
+        map[i][j] = (int)Math.round(getPixel(i, j));
+    return map;
   }
 
   // for testing

@@ -1,3 +1,5 @@
+package lavrin.hgen;
+
 interface Heightmap
 {
   public void setWrapped(boolean wrap);
@@ -35,4 +37,6 @@ interface Heightmap
   public void normalize(double max, double min);
 
   public boolean isMasked();
+
+  public int[][] asArray();
 }
