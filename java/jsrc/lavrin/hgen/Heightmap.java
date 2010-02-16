@@ -1,6 +1,6 @@
 package lavrin.hgen;
 
-interface Heightmap
+public interface Heightmap
 {
   public void setWrapped(boolean wrap);
   public boolean isWrapped();
@@ -38,5 +38,6 @@ interface Heightmap
 
   public boolean isMasked();
 
-  public int[][] asArray();
+  public double[][] asDoubleArray();
+  public float[][] asFloatArray();
 }

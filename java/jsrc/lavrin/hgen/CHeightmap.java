@@ -20,13 +20,23 @@ public class CHeightmap implements Heightmap
     ((CHeightmap)hm).saveAsText("dump10x10.txt");
   }
 
-  public int[][] asArray() {
+  public double[][] asDoubleArray() {
     int w = getWidth();
     int h = getHeight();
-    int[][] map = new int[h][w];
+    double[][] map = new double[h][w];
     for (int i = 0; i < h; i++)
       for (int j = 0; j < w; j++)
-        map[i][j] = (int)Math.round(getPixel(i, j));
+        map[i][j] = getPixel(i, j);
+    return map;
+  }
+
+  public float[][] asFloatArray() {
+    int w = getWidth();
+    int h = getHeight();
+    float[][] map = new float[h][w];
+    for (int i = 0; i < h; i++)
+      for (int j = 0; j < w; j++)
+        map[i][j] = (float)getPixel(i, j);
     return map;
   }
 
@@ -97,7 +107,7 @@ public class CHeightmap implements Heightmap
   private native void walkerFilter(int incStep, int decStep, boolean wrap);
 
   public void faultingFilter(int incStep, int decStep) {
-    faultingFilter(incStep, decStep);
+    faultingFilter(incStep, decStep, _wrap);
   }
   private native void faultingFilter(int incStep, int decStep, boolean wrap);
 

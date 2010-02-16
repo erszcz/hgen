@@ -5,6 +5,7 @@
   <property name="src"    location="jsrc" />
   <property name="build"  location="jbuild" />
   <property name="dist"   location="jdist" />
+  <property name="lib"   location="jlib" />
 
   <property name="javah"  location="/usr/bin/javah" />
   <property name="make"   location="/usr/bin/make" />
@@ -42,7 +43,9 @@
     description="compile the source" >
 
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}"/>
+    <javac
+      classpath="${lib}/vecmath.jar:${lib}/j3dcore.jar:${lib}/j3dutils.jar:${src}"
+      srcdir="${src}" destdir="${build}"/>
   </target>
 
 
@@ -66,13 +69,13 @@
   </target>
 
 
-<!--   <target name="test-viewer" depends="init"> -->
-<!--     <java fork="true" -->
-<!--       classpath="${dist}/lib/MyProject-${DSTAMP}.jar" -->
-<!--       classname="lavrin.hgen.CHeightmap"> -->
-<!--       <jvmarg value="-Djava.library.path=." /> -->
-<!--     </java> -->
-<!--   </target> -->
+  <target name="test-viewer" depends="init">
+    <java fork="true"
+      classpath="${lib}/vecmath.jar:${lib}/j3dcore.jar:${lib}/j3dutils.jar:${dist}/lib/MyProject-${DSTAMP}.jar"
+      classname="lavrin.hgen.viewer.Viewer">
+      <jvmarg value="-Djava.library.path=." />
+    </java>
+  </target>
 
 
   <!-- clean -->
