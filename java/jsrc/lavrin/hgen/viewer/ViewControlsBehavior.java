@@ -1,0 +1,162 @@
+package lavrin.hgen.viewer;
+
+// ViewControlsBehavior.java
+// Andrew Davison, September 2006, ad@fivedots.coe.psu.ac.th
+
+/* Use key presses to move the viewpoint.
+   Movement is restricted to: forward, backwards, move left,
+     move right, rotate left, rotate right, up, down.
+   The down movement can not go below the starting height.
+
+   The behaviour is added to the user's viewpoint. 
+   It extends ViewPlatformBehavior so that targetTG is available
+   to it, the ViewPlatform's tranform.
+*/
+
+import java.awt.AWTEvent;
+import java.awt.event.*;
+import java.util.Enumeration;
+
+import javax.media.j3d.*;
+import javax.vecmath.*;
+import com.sun.j3d.utils.universe.*;
+import com.sun.j3d.utils.behaviors.vp.*;
+
+
+
+public class ViewControlsBehavior extends ViewPlatformBehavior
+{
+  private WakeupOnAWTEvent keyPress;
+  private WakeupOnAWTEvent keyRelease;
+  private WakeupOnElapsedFrames eachFrame;
+  private WakeupCondition keyOrFrame;
+  private static long prevTime = System.currentTimeMillis();
+  private static long now = 0;
+
+  // moves
+  public static final int MOVE_FORWARD  = 0x0001;
+  public static final int MOVE_BACKWARD = 0x0010;
+  public static final int MOVE_LEFT     = 0x0100;
+  public static final int MOVE_RIGHT    = 0x1000;
+
+  private int move = 0;
+
+//  private static final double ROT_AMT = Math.PI / 36.0;   // 5 degrees
+  private static final double MOVE_STEP = 10.0;
+
+  // hardwired movement vectors
+  private static final Vector3d FORWARD   = new Vector3d(0,0,-MOVE_STEP);
+  private static final Vector3d BACKWARD  = new Vector3d(0,0,MOVE_STEP);
+  private static final Vector3d LEFT      = new Vector3d(-MOVE_STEP,0,0);
+  private static final Vector3d RIGHT     = new Vector3d(MOVE_STEP,0,0);
+//  private static final Vector3d UP = new Vector3d(0,MOVE_STEP,0);
+//  private static final Vector3d DOWN = new Vector3d(0,-MOVE_STEP,0);
+
+  // key names
+//  private int forwardKey  = KeyEvent.VK_UP;
+//  private int backwardKey = KeyEvent.VK_DOWN;
+//  private int leftKey     = KeyEvent.VK_LEFT;
+//  private int rightKey    = KeyEvent.VK_RIGHT;
+  private int forwardKey  = KeyEvent.VK_W;
+  private int backwardKey = KeyEvent.VK_S;
+  private int leftKey     = KeyEvent.VK_A;
+  private int rightKey    = KeyEvent.VK_D;
+
+  // for repeated calcs
+  private Transform3D t3d = new Transform3D();
+  private Transform3D toMove = new Transform3D();
+  private Transform3D toRot = new Transform3D();
+  private Vector3d tran = new Vector3d();
+
+//  private int upMoves = 0;
+
+
+  public ViewControlsBehavior() {
+    keyPress    = new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED);
+    keyRelease  = new WakeupOnAWTEvent(KeyEvent.KEY_RELEASED);
+    eachFrame   = new WakeupOnElapsedFrames(0);
+    keyOrFrame  = new WakeupOr(new WakeupCriterion[]{ keyPress,
+      keyRelease, eachFrame });
+  }
+
+
+  public void initialize() {
+    wakeupOn(keyOrFrame);
+  }
+
+
+  public void processStimulus(Enumeration criteria) {
+    WakeupCriterion wakeup;
+
+    while (criteria.hasMoreElements()) {
+      wakeup = (WakeupCriterion)criteria.nextElement();
+      if (wakeup instanceof WakeupOnAWTEvent) {
+        AWTEvent[] event = ((WakeupOnAWTEvent)wakeup).getAWTEvent();
+        for( int i = 0; i < event.length; i++ ) {
+          if( event[i].getID() == KeyEvent.KEY_PRESSED ||
+              event[i].getID() == KeyEvent.KEY_RELEASED) {
+            processKeyEvent((KeyEvent)event[i]);
+          }
+        }
+      } else if (wakeup instanceof WakeupOnElapsedFrames) {
+        now = System.currentTimeMillis();
+        doMove(now - prevTime);
+        prevTime = now;
+      }
+    }
+    wakeupOn(keyOrFrame);
+  } // end of processStimulus()
+
+
+  private void processKeyEvent(KeyEvent ev) {
+    System.out.println("Key pressed or released.");
+    int keyCode = ev.getKeyCode();
+    boolean press = (ev.getID() == KeyEvent.KEY_PRESSED);
+    if (keyCode == forwardKey) {
+      System.out.println("  forward");
+      move = press ? move | MOVE_FORWARD : move ^ MOVE_FORWARD;
+    } else if (keyCode == backwardKey) {
+      System.out.println("  backward");
+      move = press ? move | MOVE_BACKWARD : move ^ MOVE_BACKWARD;
+    } else if (keyCode == leftKey) {
+      System.out.println("  left");
+      move = press ? move | MOVE_LEFT : move ^ MOVE_LEFT;
+    } else if (keyCode == rightKey) {
+      System.out.println("  right");
+      move = press ? move | MOVE_RIGHT : move ^ MOVE_RIGHT;
+    }
+  }
+
+
+//  private void rotateY(double radians)
+//  // rotate about y-axis by radians
+//  { targetTG.getTransform(t3d);   // targetTG is the ViewPlatform's transform
+//    toRot.rotY(radians);
+//    t3d.mul(toRot);
+//    targetTG.setTransform(t3d);
+//  }
+
+
+  private void doMove(long timeDelta) {
+    System.out.printf("move: %04x\n", move);
+    if (move == 0) return;
+
+    double factor = timeDelta / 1000.0;
+
+    tran.set(new double[]{ 0.0, 0.0, 0.0 });
+    if ((move & MOVE_FORWARD) != 0)
+      tran.add(FORWARD);
+    if ((move & MOVE_BACKWARD) != 0)
+      tran.add(BACKWARD);
+    if ((move & MOVE_LEFT) != 0)
+      tran.add(LEFT);
+    if ((move & MOVE_RIGHT) != 0)
+      tran.add(RIGHT);
+    tran.scale(factor);
+
+    targetTG.getTransform(t3d);
+    toMove.setTranslation(tran);
+    t3d.mul(toMove);
+    targetTG.setTransform(t3d);
+  }
+}  // end of ViewControlsBehavior class

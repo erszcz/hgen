@@ -2,6 +2,7 @@ package lavrin.hgen.viewer;
 
 import java.io.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.*;
 import javax.imageio.*;
 import java.util.*;
@@ -33,6 +34,15 @@ public class Landscape extends Shape3D
   private Heightmap hmap;
   private float[][] heights;   // height map for the floor
 
+  // moves
+  public static final int MOVE_FORWARD      = 0x0001;
+  public static final int MOVE_BACKWARD     = 0x0010;
+  public static final int MOVE_STRAFE_LEFT  = 0x0100;
+  public static final int MOVE_STRAFE_RIGHT = 0x1000;
+
+  private static final int SPEED = 10;
+  private int move = 0;
+
 
   public Landscape() {
     this("grass.gif", 4, "stoneBits.gif", 2);
@@ -55,11 +65,18 @@ public class Landscape extends Shape3D
   } // end of Landscape()
 
 
+  public void updateEachFrame(long timeDelta) {
+    System.out.printf("timeDelta: %d\n", timeDelta);
+    if (move == 0) return;
+  }
+
+
   public void update() {
+    // transformation
 //    System.out.println("asd");
-//    hmap.faultingFilter(1, 1);
+    hmap.faultingFilter(1, 1);
 //    hmap.smoothFilter((short)1);
-    hmap.walkerFilter(1, 0);
+//    hmap.walkerFilter(1, 0);
     heights = hmap.asFloatArray();
     createGeometry(texLen1, texLen2);
   }
@@ -398,6 +415,21 @@ public class Landscape extends Shape3D
   } // end of createLightMap()
 
 
-  public void processKey(int keyCode, boolean isShift, boolean isAlt) {
+  public void processKey(int keyCode, boolean isPressed) {
+    if (isPressed) {
+      switch (keyCode) {
+        case KeyEvent.VK_W: move |= MOVE_FORWARD; break;
+        case KeyEvent.VK_S: move |= MOVE_BACKWARD; break;
+        case KeyEvent.VK_A: move |= MOVE_STRAFE_LEFT; break;
+        case KeyEvent.VK_D: move |= MOVE_STRAFE_RIGHT; break;
+      }
+    } else { // isReleased
+      switch (keyCode) {
+        case KeyEvent.VK_W: move ^= MOVE_FORWARD; break;
+        case KeyEvent.VK_S: move ^= MOVE_BACKWARD; break;
+        case KeyEvent.VK_A: move ^= MOVE_STRAFE_LEFT; break;
+        case KeyEvent.VK_D: move ^= MOVE_STRAFE_RIGHT; break;
+      }
+    }
   }
 } // end of Landscape class

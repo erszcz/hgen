@@ -11,7 +11,7 @@ import javax.vecmath.*;
 import com.sun.j3d.utils.behaviors.vp.*;
 import com.sun.j3d.utils.image.*;
 
-//import lavrin.hgen.viewer.*;
+import lavrin.hgen.viewer.*;
 
 
 public class ViewerPanel extends JPanel
@@ -21,8 +21,7 @@ public class ViewerPanel extends JPanel
 
   private static final int BOUNDSIZE = 500;  // larger than world
 
-  private static final Point3d USERPOSN = new Point3d(0,10,30);
-    // initial user position
+  private final static double Z_START = 9.0;
 
   private static final int UPDATE_TIME = 100;  // ms, for updating the balls
 
@@ -50,10 +49,10 @@ public class ViewerPanel extends JPanel
     su = new SimpleUniverse(canvas3D);
 
     reportTextureUnitInfo(canvas3D);
+
     createSceneGraph();
-    initUserPosition();        // set user's viewpoint
-    orbitControls(canvas3D);   // controls for moving the viewpoint
-    
+    createUserControls();
+
     su.addBranchGraph( sceneBG );
   } // end of ViewerPanel()
 
@@ -154,33 +153,19 @@ public class ViewerPanel extends JPanel
   }  // end of addFloor()
 
 
-
-  private void orbitControls(Canvas3D c)
-  /* OrbitBehaviour allows the user to rotate around the scene, and to
-     zoom in and out.  */
-  {
-    OrbitBehavior orbit = 
-		new OrbitBehavior(c, OrbitBehavior.REVERSE_ALL);
-    orbit.setSchedulingBounds(bounds);
-
+  private void createUserControls() { 
     ViewingPlatform vp = su.getViewingPlatform();
-    vp.setViewPlatformBehavior(orbit);	 
-  }  // end of orbitControls()
 
-
-  private void initUserPosition()
-  // Set the user's initial viewpoint using lookAt()
-  {
-    ViewingPlatform vp = su.getViewingPlatform();
-    TransformGroup steerTG = vp.getViewPlatformTransform();
-
+    // position viewpoint
+    TransformGroup targetTG = vp.getViewPlatformTransform();
     Transform3D t3d = new Transform3D();
-    steerTG.getTransform(t3d);
+    targetTG.getTransform(t3d);
+    t3d.setTranslation( new Vector3d(0,1,Z_START));
+    targetTG.setTransform(t3d);
 
-    // args are: viewer posn, where looking, up direction
-    t3d.lookAt( USERPOSN, new Point3d(0,0,0), new Vector3d(0,1,0));
-    t3d.invert();
-
-    steerTG.setTransform(t3d);
-  }  // end of initUserPosition()
+    // set up keyboard controls to move the viewpoint
+    ViewControlsBehavior vcb = new ViewControlsBehavior();
+    vcb.setSchedulingBounds(bounds);
+    vp.setViewPlatformBehavior(vcb);
+  } // end of createUserControls()
 } // end of ViewerPanel class
