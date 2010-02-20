@@ -38,6 +38,7 @@ public class Landscape extends Shape3D
     this("grass.gif", 4, "stoneBits.gif", 2);
   }
 
+
   public Landscape(String texFnm1, int freq1, 
                         String texFnm2, int freq2) 
   {
@@ -55,10 +56,12 @@ public class Landscape extends Shape3D
 
 
   public void update() {
-    System.out.println("asd");
+//    System.out.println("asd");
+//    hmap.faultingFilter(1, 1);
 //    hmap.smoothFilter((short)1);
-//    heights = hmap.asFloatArray();
-//    createGeometry(texLen1, texLen2);
+    hmap.walkerFilter(1, 0);
+    heights = hmap.asFloatArray();
+    createGeometry(texLen1, texLen2);
   }
 
 
@@ -78,14 +81,15 @@ public class Landscape extends Shape3D
     else if (freq > FLOOR_LEN)  // if bigger than the floor length
       freq = FLOOR_LEN;
 
+    setCapability(ALLOW_GEOMETRY_READ);
+    setCapability(ALLOW_GEOMETRY_WRITE);
+
     int texLen = FLOOR_LEN / freq;   // integer division
     System.out.println(texFnm + " with frequency " + freq + 
                        "; texture length will be " + texLen);
     return texLen;
   } // end of calcTextureLength()
 
-
-  // ----------------- height map generation ---------------------
 
   private float[][] makeHills() {
 //    float[][] heights = new float[FLOOR_LEN+1][FLOOR_LEN+1];  
@@ -104,8 +108,9 @@ public class Landscape extends Shape3D
 //
 
 //
-    for (int i = 0; i < 1000; i++)
-      hmap.faultingFilter(1, 0);
+//    for (int i = 0; i < 200; i++)
+    for (int i = 0; i < 0; i++)
+      hmap.faultingFilter(1, 1);
 //
 
 //    hmap.normalize(50, 0);
@@ -114,42 +119,6 @@ public class Landscape extends Shape3D
 
     return heights;
   }  // end of makeHills()
-
-
-//  private float[][] makeHills()
-//  /* Generate floor vertex heights by making hills.
-//     The heights are stored in a left-to-right, back-to-front 
-//     order starting from the left, back corner of the floor at 
-//     (-FLOOR_LEN/2, -FLOOR_LEN/2). Only the heights are stored, not the
-//     (x,z) coordinates.
-//
-//     A hill increases the height of a (x,z) coordinate by PEAK_INCR, and
-//     the heights of its 4 neighbouring vertices by SIDE_INCR.
-//  */
-//  {
-//    float[][] heights = new float[FLOOR_LEN+1][FLOOR_LEN+1];  
-//                   // include front and right edges of floor
-//
-//    Random rand = new Random();
-//
-//    int x, z;   // index into array (x == column, z == row)
-//    for (int i=0; i < NUM_HILL_INCRS; i++) {
-//      x = (int)(rand.nextDouble()*FLOOR_LEN);
-//      z = (int)(rand.nextDouble()*FLOOR_LEN);
-//      if (addHill(x, z, rand)) {
-//        heights[z][x] += PEAK_INCR;
-//        if (x > 0)
-//          heights[z][x-1] += SIDE_INCR;   // left
-//        if (x < (FLOOR_LEN-1))
-//          heights[z][x+1] += SIDE_INCR;   // right
-//        if (z > 0)
-//          heights[z-1][x] += SIDE_INCR;   // back
-//        if (z < (FLOOR_LEN-1))
-//          heights[z+1][x] += SIDE_INCR;   // front
-//      }
-//    }
-//    return heights;
-//  }  // end of makeHills()
 
 
   private boolean addHill(int x, int z, Random rand)
@@ -172,11 +141,9 @@ public class Landscape extends Shape3D
   }  // end of addHill()
 
 
-  public float[][] getHeightMap()
-  { return heights; }
-
-  
-  // ------------------- floor's geometry ----------------------------
+  public float[][] getHeightMap() {
+    return heights;
+  }
 
 
   private void createGeometry(int texLen1, int texLen2)
@@ -206,28 +173,8 @@ public class Landscape extends Shape3D
     plane.setTextureCoordinates(1, 0, tCoords2);   // second texture
     plane.setTextureCoordinates(2, 0, tCoords3);  // light map
     setGeometry(plane);
-
-/*
-    // create geometryInfo
-    GeometryInfo gi = new GeometryInfo(GeometryInfo.QUAD_ARRAY);
-    gi.setCoordinates(coords);
-    gi.setTextureCoordinateParams(3, 2); // 3 sets of 2D texels
-    gi.setTexCoordSetMap( new int[]{0, 1, 2} );
-    gi.setTextureCoordinates(0, tCoords1);   // for first texture
-    gi.setTextureCoordinates(1, tCoords2);   // second texture
-    gi.setTextureCoordinates(2, tCoords3);   // light map
-
-    // stripifier to use triangle strips
-    Stripifier st = new Stripifier();
-    st.stripify(gi);
-
-    // extract and use GeometryArray
-    setGeometry( gi.getGeometryArray() );
-*/
   }  // end of createGeometry()
 
-
-  // ------------------ geometry's vertices --------------------
 
   private Point3f[] createCoords()
   /* Create the (x,y,z) coordinates for the scene. The (x,z) 
@@ -249,7 +196,6 @@ public class Landscape extends Shape3D
   }  // end of createCoords()
 
 
-
   private void createTile(Point3f[] coords, int i, int x, int z)
   // Coords for a single quad (tile), its top left hand corner is at (x,height,z)
   {
@@ -264,8 +210,6 @@ public class Landscape extends Shape3D
     coords[i+3] = new Point3f(xc, heights[z][x], zc);   
   }  // end of createTile()
 
-
-  // ------------------ geometry's texture coordinates --------------------
 
   private TexCoord2f[] createTexCoords(Point3f[] coords, int texLen)
   /* Create texture coordinates in tcoords[] for the (x,y,z) coords in
@@ -332,8 +276,6 @@ public class Landscape extends Shape3D
   }  // end of makeTexCoord
 
 
-  // ------------------- floor's appearance -----------------------
-
   private void createAppearance(String texFnm1, String texFnm2)
   /* Load two textures and combine them into a multi-texture. 
      The second texture has transparent parts so both textures
@@ -391,9 +333,6 @@ public class Landscape extends Shape3D
     return tus;
   }  // end of loadTextureUnit()
 
-
-
-  // ---------- runtime light map ------------------------------
   
   private TextureUnitState lightMapTUS()
   // make a texture unit out of a light map created at runtime
@@ -459,4 +398,6 @@ public class Landscape extends Shape3D
   } // end of createLightMap()
 
 
+  public void processKey(int keyCode, boolean isShift, boolean isAlt) {
+  }
 } // end of Landscape class
