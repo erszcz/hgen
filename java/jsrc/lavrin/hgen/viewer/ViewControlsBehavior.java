@@ -52,16 +52,6 @@ public class ViewControlsBehavior extends ViewPlatformBehavior
 //  private static final Vector3d UP = new Vector3d(0,MOVE_STEP,0);
 //  private static final Vector3d DOWN = new Vector3d(0,-MOVE_STEP,0);
 
-  // key names
-//  private int forwardKey  = KeyEvent.VK_UP;
-//  private int backwardKey = KeyEvent.VK_DOWN;
-//  private int leftKey     = KeyEvent.VK_LEFT;
-//  private int rightKey    = KeyEvent.VK_RIGHT;
-  private int forwardKey  = KeyEvent.VK_W;
-  private int backwardKey = KeyEvent.VK_S;
-  private int leftKey     = KeyEvent.VK_A;
-  private int rightKey    = KeyEvent.VK_D;
-
   // for repeated calcs
   private Transform3D t3d = new Transform3D();
   private Transform3D toMove = new Transform3D();
@@ -109,21 +99,24 @@ public class ViewControlsBehavior extends ViewPlatformBehavior
 
 
   private void processKeyEvent(KeyEvent ev) {
-    System.out.println("Key pressed or released.");
     int keyCode = ev.getKeyCode();
-    boolean press = (ev.getID() == KeyEvent.KEY_PRESSED);
-    if (keyCode == forwardKey) {
-      System.out.println("  forward");
-      move = press ? move | MOVE_FORWARD : move ^ MOVE_FORWARD;
-    } else if (keyCode == backwardKey) {
-      System.out.println("  backward");
-      move = press ? move | MOVE_BACKWARD : move ^ MOVE_BACKWARD;
-    } else if (keyCode == leftKey) {
-      System.out.println("  left");
-      move = press ? move | MOVE_LEFT : move ^ MOVE_LEFT;
-    } else if (keyCode == rightKey) {
-      System.out.println("  right");
-      move = press ? move | MOVE_RIGHT : move ^ MOVE_RIGHT;
+
+    if (ev.getID() == KeyEvent.KEY_PRESSED) {
+      System.out.println("Key pressed.");
+      switch (keyCode) {
+        case KeyEvent.VK_W: move |= MOVE_FORWARD;   break;
+        case KeyEvent.VK_S: move |= MOVE_BACKWARD;  break;
+        case KeyEvent.VK_A: move |= MOVE_LEFT;      break;
+        case KeyEvent.VK_D: move |= MOVE_RIGHT;     break;
+      }
+    } else if (ev.getID() == KeyEvent.KEY_RELEASED) {
+      System.out.println("Key released.");
+      switch (keyCode) {
+        case KeyEvent.VK_W: move ^= MOVE_FORWARD;   break;
+        case KeyEvent.VK_S: move ^= MOVE_BACKWARD;  break;
+        case KeyEvent.VK_A: move ^= MOVE_LEFT;      break;
+        case KeyEvent.VK_D: move ^= MOVE_RIGHT;     break;
+      }
     }
   }
 
@@ -141,7 +134,7 @@ public class ViewControlsBehavior extends ViewPlatformBehavior
     System.out.printf("move: %04x\n", move);
     if (move == 0) return;
 
-    double factor = timeDelta / 1000.0;
+    double factor = timeDelta * 0.001;
 
     tran.set(new double[]{ 0.0, 0.0, 0.0 });
     if ((move & MOVE_FORWARD) != 0)

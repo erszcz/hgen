@@ -8,7 +8,7 @@ import com.sun.j3d.utils.universe.*;
 import com.sun.j3d.utils.geometry.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
-import com.sun.j3d.utils.behaviors.vp.*;
+import com.sun.j3d.utils.behaviors.keyboard.*;
 import com.sun.j3d.utils.image.*;
 
 import lavrin.hgen.viewer.*;
@@ -53,6 +53,8 @@ public class ViewerPanel extends JPanel
     createSceneGraph();
     createUserControls();
 
+    sceneBG.compile();
+
     su.addBranchGraph( sceneBG );
   } // end of ViewerPanel()
 
@@ -90,7 +92,7 @@ public class ViewerPanel extends JPanel
     addBackground();      // the sky
     addFloor();           // the multi-textured floor (and splashes)
 
-    sceneBG.compile();   // fix the scene
+//    sceneBG.compile();   // fix the scene
   } // end of createSceneGraph()
 
 
@@ -164,8 +166,17 @@ public class ViewerPanel extends JPanel
     targetTG.setTransform(t3d);
 
     // set up keyboard controls to move the viewpoint
-    ViewControlsBehavior vcb = new ViewControlsBehavior();
-    vcb.setSchedulingBounds(bounds);
-    vp.setViewPlatformBehavior(vcb);
+    System.out.println("a");
+//    ViewControlsBehavior controlBehavior = new ViewControlsBehavior();
+//    Behavior controlBehavior = new KeyNavigatorBehavior(targetTG);
+    KeyBehavior controlBehavior = new KeyBehavior();
+
+    System.out.println("b");
+    controlBehavior.setSchedulingBounds(bounds);
+
+    System.out.println("c");
+//    sceneBG.addChild(controlBehavior);
+    vp.setViewPlatformBehavior(controlBehavior);
+    System.out.println("d");
   } // end of createUserControls()
 } // end of ViewerPanel class

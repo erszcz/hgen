@@ -156,4 +156,11 @@ JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_destroy
   delete (HeightmapCore*)peer;
 }
 
+JNIEXPORT jlong JNICALL Java_lavrin_hgen_CHeightmap_peerCopy
+  (JNIEnv * env, jobject self, jlong peer)
+{
+  HeightmapCore* orig = (HeightmapCore*)peer;
+  return (jlong)(new(std::nothrow) HeightmapCore(*orig));
+}
+
 } // extern "C"

@@ -191,6 +191,14 @@ JNIEXPORT jlong JNICALL Java_lavrin_hgen_CHeightmap_create
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_destroy
   (JNIEnv *, jobject, jlong);
 
+/*
+ * Class:     lavrin_hgen_CHeightmap
+ * Method:    peerCopy
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_lavrin_hgen_CHeightmap_peerCopy
+  (JNIEnv *, jobject, jlong);
+
 #ifdef __cplusplus
 }
 #endif

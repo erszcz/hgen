@@ -38,6 +38,10 @@ public interface Heightmap
 
   public boolean isMasked();
 
-  public double[][] asDoubleArray();
-  public float[][] asFloatArray();
+  public double[][] toDoubleArray();
+  public float[][] toFloatArray();
+
+  public void scale(double factor);
+
+  public Heightmap copy();
 }

@@ -20,7 +20,7 @@ public class CHeightmap implements Heightmap
     ((CHeightmap)hm).saveAsText("dump10x10.txt");
   }
 
-  public double[][] asDoubleArray() {
+  public double[][] toDoubleArray() {
     int w = getWidth();
     int h = getHeight();
     double[][] map = new double[h][w];
@@ -30,7 +30,7 @@ public class CHeightmap implements Heightmap
     return map;
   }
 
-  public float[][] asFloatArray() {
+  public float[][] toFloatArray() {
     int w = getWidth();
     int h = getHeight();
     float[][] map = new float[h][w];
@@ -61,8 +61,16 @@ public class CHeightmap implements Heightmap
   }
 
   public CHeightmap(int height, int width, int margin) {
-    _peer = create(height, width, margin);
-    if (_peer == 0) throw new RuntimeException("can't create native instance");
+    this(height, width, margin, 0);
+  }
+
+  private CHeightmap(int height, int width, int margin, long peer) {
+    if (peer == 0)
+      _peer = create(height, width, margin);
+    else
+      _peer = peerCopy(peer);
+    if (_peer == 0)
+      throw new RuntimeException("can't create native instance");
   }
 
   // Heightmap interface
@@ -114,6 +122,12 @@ public class CHeightmap implements Heightmap
   public native void normalize();
   public native void normalize(double max, double min);
 
+  public void scale(double factor) {
+    for (int i = 0; i < getHeight(); i++)
+      for (int j = 0; j < getWidth(); j++)
+        setPixel(i, j, getPixel(i, j) * factor);
+  }
+
   public native boolean isMasked();
 
   // native interface stuff
@@ -131,6 +145,13 @@ public class CHeightmap implements Heightmap
   protected void finalize()
   {
     destroy();
+  }
+
+  // get a native object copy using its copy constructor
+  private native long peerCopy(long peer);
+
+  public Heightmap copy() {
+    return new CHeightmap(getWidth(), getHeight(), getMargin(), _peer);
   }
 
   static

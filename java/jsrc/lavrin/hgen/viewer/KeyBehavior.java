@@ -27,7 +27,7 @@ import com.sun.j3d.utils.behaviors.vp.*;
 public class KeyBehavior extends ViewPlatformBehavior
 {
   private static final double ROT_AMT = Math.PI / 36.0;   // 5 degrees
-  private static final double MOVE_STEP = 0.2;
+  private static final double MOVE_STEP = 1.0;
 
   // hardwired movement vectors
   private static final Vector3d FWD = new Vector3d(0,0,-MOVE_STEP);

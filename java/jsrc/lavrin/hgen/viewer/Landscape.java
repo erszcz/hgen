@@ -65,19 +65,16 @@ public class Landscape extends Shape3D
   } // end of Landscape()
 
 
-  public void updateEachFrame(long timeDelta) {
-    System.out.printf("timeDelta: %d\n", timeDelta);
-    if (move == 0) return;
-  }
-
-
   public void update() {
-    // transformation
-//    System.out.println("asd");
-    hmap.faultingFilter(1, 1);
-//    hmap.smoothFilter((short)1);
-//    hmap.walkerFilter(1, 0);
-    heights = hmap.asFloatArray();
+//    hmap.faultingFilter(10, 5);
+//    hmap.walkerFilter(10, 5);
+    hmap.smoothFilter((short)1);
+
+    Heightmap tmp = hmap.copy();
+    tmp.normalize();
+    tmp.scale(20.0);
+
+    heights = tmp.toFloatArray();
     createGeometry(texLen1, texLen2);
   }
 
@@ -116,8 +113,9 @@ public class Landscape extends Shape3D
 //      for (int j = 0; j < FLOOR_LEN+1; j++)
 //        heights[i][j] = 0.0f;
 
-    hmap.flatFill(0.0);
-//
+//    hmap.flatFill(0.1);
+    hmap.clusterFill(0, 20, (short)50, (short)1);
+
 //    hmap.walkerFilter(5,0);
 //    hmap.walkerFilter(10,0);
 //    hmap.walkerFilter(7,0);
@@ -132,7 +130,7 @@ public class Landscape extends Shape3D
 
 //    hmap.normalize(50, 0);
 //    hmap.normalize(30, 0);
-    float[][] heights = hmap.asFloatArray();  
+    float[][] heights = hmap.toFloatArray();  
 
     return heights;
   }  // end of makeHills()
