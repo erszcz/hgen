@@ -21,7 +21,7 @@ public class ViewerPanel extends JPanel
 
   private static final int BOUNDSIZE = 500;  // larger than world
 
-  private final static double Z_START = 9.0;
+  private final static double Z_START = 60.0;
 
   private static final int UPDATE_TIME = 100;  // ms, for updating the balls
 
@@ -48,8 +48,6 @@ public class ViewerPanel extends JPanel
 
     su = new SimpleUniverse(canvas3D);
 
-    reportTextureUnitInfo(canvas3D);
-
     createSceneGraph();
     createUserControls();
 
@@ -57,23 +55,6 @@ public class ViewerPanel extends JPanel
 
     su.addBranchGraph( sceneBG );
   } // end of ViewerPanel()
-
-
-
-  private void reportTextureUnitInfo(Canvas3D c3d)
-  /* Report the number of texture units supported by the machine's 
-     graphics card. */
-  {
-    Map c3dMap = c3d.queryProperties();
-
-    if (!c3dMap.containsKey("textureUnitStateMax"))
-      System.out.println("Texture unit state maximum not found");
-    else {
-      int max  = ((Integer)c3dMap.get("textureUnitStateMax")).intValue();
-      System.out.println("Texture unit state maximum: " + max);
-    }
-  }  // end of reportTextureUnitInfo()
-
 
 
   private void createSceneGraph() 
@@ -91,6 +72,8 @@ public class ViewerPanel extends JPanel
     lightScene();         // the lights
     addBackground();      // the sky
     addFloor();           // the multi-textured floor (and splashes)
+//    addSphere();
+    addWedge();
 
 //    sceneBG.compile();   // fix the scene
   } // end of createSceneGraph()
@@ -100,36 +83,36 @@ public class ViewerPanel extends JPanel
   /* One ambient light, 2 directional lights */
   {
     Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
+    Color3f blue  = new Color3f(0.0f, 0.0f, 1.0f);
 
     // Set up the ambient light
     // ambient light lights up every corner of the universe equally
-    AmbientLight ambientLightNode = new AmbientLight(white);
-    ambientLightNode.setInfluencingBounds(bounds);
-    sceneBG.addChild(ambientLightNode);
+//    AmbientLight ambientLightNode = new AmbientLight(white);
+//    ambientLightNode.setInfluencingBounds(bounds);
+//    sceneBG.addChild(ambientLightNode);
 
     // directional lights
     // beams of these lights come from infinity, are parallel and directed dir -> 0,0,0
-    Vector3f light1Direction  = new Vector3f(-1.0f, -1.0f, -1.0f);
+    Vector3f light1Direction  = new Vector3f(20.0f, 1.0f, 0.0f);
        // left, down, backwards 
-    Vector3f light2Direction  = new Vector3f(1.0f, -1.0f, 1.0f);
+//    Vector3f light2Direction  = new Vector3f(1.0f, -1.0f, 1.0f);
        // right, down, forwards
 
-    DirectionalLight light1 = 
+    DirectionalLight dLight1 = 
             new DirectionalLight(white, light1Direction);
-    light1.setInfluencingBounds(bounds);
-    sceneBG.addChild(light1);
+    dLight1.setInfluencingBounds(bounds);
+    sceneBG.addChild(dLight1);
 
-    DirectionalLight light2 = 
-        new DirectionalLight(white, light2Direction);
-    light2.setInfluencingBounds(bounds);
-    sceneBG.addChild(light2);
+//    DirectionalLight dLight2 = 
+//        new DirectionalLight(blue, light2Direction);
+//    dLight2.setInfluencingBounds(bounds);
+//    sceneBG.addChild(dLight2);
   }  // end of lightScene()
 
 
 
-  private void addBackground()
-  // A blue sky
-  { Background back = new Background();
+  private void addBackground() {
+    Background back = new Background();
     back.setApplicationBounds( bounds );
     back.setColor(0.17f, 0.65f, 0.92f);    // sky colour
     sceneBG.addChild( back );
@@ -153,6 +136,40 @@ public class ViewerPanel extends JPanel
     tb.setSchedulingBounds(bounds);
     sceneBG.addChild(tb);
   }  // end of addFloor()
+
+
+  private void addSphere() {
+    // add sphere to check shading
+    Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
+    Color3f blue  = new Color3f(0.0f, 0.0f, 1.0f);
+    Color3f red   = new Color3f(1.0f, 0.0f, 0.0f);
+    Color3f black = new Color3f(0.0f, 0.0f, 0.0f);
+
+    Appearance spApp = new Appearance();
+    Material spMat = new Material(black, black, red, blue, 5);
+    spApp.setMaterial(spMat);
+    Sphere sp = new Sphere(10.0f, Primitive.GENERATE_NORMALS, spApp);
+    Transform3D pos = new Transform3D();
+    pos.set(new Vector3f(0, 10, 0));
+    TransformGroup spTG = new TransformGroup(pos);
+    spTG.addChild(sp);
+
+    sceneBG.addChild(spTG);
+  }
+
+
+  private void addWedge() {
+    // position
+    Transform3D pos = new Transform3D();
+    pos.set(new Vector3f(1, 2, 0));
+    TransformGroup wedgeTG = new TransformGroup(pos);
+
+    // object
+    Wedge wedge = new Wedge();
+
+    wedgeTG.addChild(wedge);
+    sceneBG.addChild(wedgeTG);
+  }
 
 
   private void createUserControls() { 
