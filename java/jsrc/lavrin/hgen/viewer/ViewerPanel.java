@@ -9,6 +9,7 @@ import com.sun.j3d.utils.geometry.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import com.sun.j3d.utils.behaviors.keyboard.*;
+import com.sun.j3d.utils.behaviors.vp.*;
 import com.sun.j3d.utils.image.*;
 
 import lavrin.hgen.viewer.*;
@@ -21,16 +22,15 @@ public class ViewerPanel extends JPanel
 
   private static final int BOUNDSIZE = 500;  // larger than world
 
-  private final static double Z_START = 60.0;
+  private final static float Z_START = 80.0f;
 
   private static final int UPDATE_TIME = 100;  // ms, for updating the balls
 
+  private Canvas3D canvas3D;
 
   private SimpleUniverse su;
   private BranchGroup sceneBG;
   private BoundingSphere bounds;   // for environment nodes
-
-  private float[][] heights;  // height map for the floor
 
 
   public ViewerPanel()
@@ -41,7 +41,7 @@ public class ViewerPanel extends JPanel
 
     GraphicsConfiguration config =
 					SimpleUniverse.getPreferredConfiguration();
-    Canvas3D canvas3D = new Canvas3D(config);
+    canvas3D = new Canvas3D(config);
     add("Center", canvas3D);
     canvas3D.setFocusable(true);     // give focus to the canvas 
     canvas3D.requestFocus();
@@ -175,25 +175,17 @@ public class ViewerPanel extends JPanel
   private void createUserControls() { 
     ViewingPlatform vp = su.getViewingPlatform();
 
-    // position viewpoint
+    // position viewport
     TransformGroup targetTG = vp.getViewPlatformTransform();
     Transform3D t3d = new Transform3D();
     targetTG.getTransform(t3d);
     t3d.setTranslation( new Vector3d(0,1,Z_START));
     targetTG.setTransform(t3d);
 
-    // set up keyboard controls to move the viewpoint
-    System.out.println("a");
-//    ViewControlsBehavior controlBehavior = new ViewControlsBehavior();
-//    Behavior controlBehavior = new KeyNavigatorBehavior(targetTG);
-    KeyBehavior controlBehavior = new KeyBehavior();
-
-    System.out.println("b");
+    // set up keyboard controls to move the viewport
+    ViewPlatformBehavior controlBehavior = new UserControlsBehavior(canvas3D);
+//    ViewPlatformBehavior controlBehavior = new KeyBehavior();
     controlBehavior.setSchedulingBounds(bounds);
-
-    System.out.println("c");
-//    sceneBG.addChild(controlBehavior);
     vp.setViewPlatformBehavior(controlBehavior);
-    System.out.println("d");
-  } // end of createUserControls()
+  }
 } // end of ViewerPanel class

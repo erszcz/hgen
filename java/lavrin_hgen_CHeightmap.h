@@ -34,58 +34,58 @@ JNIEXPORT jint JNICALL Java_lavrin_hgen_CHeightmap_getMargin
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    getPixel
- * Signature: (II)D
+ * Signature: (II)F
  */
-JNIEXPORT jdouble JNICALL Java_lavrin_hgen_CHeightmap_getPixel
+JNIEXPORT jfloat JNICALL Java_lavrin_hgen_CHeightmap_getPixel
   (JNIEnv *, jobject, jint, jint);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    getMax
- * Signature: ()D
+ * Signature: ()F
  */
-JNIEXPORT jdouble JNICALL Java_lavrin_hgen_CHeightmap_getMax
+JNIEXPORT jfloat JNICALL Java_lavrin_hgen_CHeightmap_getMax
   (JNIEnv *, jobject);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    getMin
- * Signature: ()D
+ * Signature: ()F
  */
-JNIEXPORT jdouble JNICALL Java_lavrin_hgen_CHeightmap_getMin
+JNIEXPORT jfloat JNICALL Java_lavrin_hgen_CHeightmap_getMin
   (JNIEnv *, jobject);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    setPixel
- * Signature: (IID)Z
+ * Signature: (IIF)Z
  */
 JNIEXPORT jboolean JNICALL Java_lavrin_hgen_CHeightmap_setPixel
-  (JNIEnv *, jobject, jint, jint, jdouble);
+  (JNIEnv *, jobject, jint, jint, jfloat);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    flatFill
- * Signature: (D)V
+ * Signature: (F)V
  */
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_flatFill
-  (JNIEnv *, jobject, jdouble);
+  (JNIEnv *, jobject, jfloat);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    randomFill
- * Signature: (DD)V
+ * Signature: (FF)V
  */
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_randomFill
-  (JNIEnv *, jobject, jdouble, jdouble);
+  (JNIEnv *, jobject, jfloat, jfloat);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    clusterFill
- * Signature: (DDSS)V
+ * Signature: (FFII)V
  */
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_clusterFill
-  (JNIEnv *, jobject, jdouble, jdouble, jshort, jshort);
+  (JNIEnv *, jobject, jfloat, jfloat, jint, jint);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
@@ -98,34 +98,34 @@ JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_clusterFilter
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    alternateClusterFilter
- * Signature: (S)V
+ * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_alternateClusterFilter
-  (JNIEnv *, jobject, jshort);
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    liquidFilter
- * Signature: (DDDDZ)V
+ * Signature: (FFFFZ)V
  */
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_liquidFilter
-  (JNIEnv *, jobject, jdouble, jdouble, jdouble, jdouble, jboolean);
+  (JNIEnv *, jobject, jfloat, jfloat, jfloat, jfloat, jboolean);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    smoothFilter
- * Signature: (SZ)V
+ * Signature: (IZ)V
  */
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_smoothFilter
-  (JNIEnv *, jobject, jshort, jboolean);
+  (JNIEnv *, jobject, jint, jboolean);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    terraceFilter
- * Signature: (S)V
+ * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_terraceFilter
-  (JNIEnv *, jobject, jshort);
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     lavrin_hgen_CHeightmap
@@ -154,10 +154,10 @@ JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_normalize__
 /*
  * Class:     lavrin_hgen_CHeightmap
  * Method:    normalize
- * Signature: (DD)V
+ * Signature: (FF)V
  */
-JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_normalize__DD
-  (JNIEnv *, jobject, jdouble, jdouble);
+JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_normalize__FF
+  (JNIEnv *, jobject, jfloat, jfloat);
 
 /*
  * Class:     lavrin_hgen_CHeightmap

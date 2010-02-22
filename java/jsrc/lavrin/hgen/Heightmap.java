@@ -8,40 +8,37 @@ public interface Heightmap
   public int getHeight();
   public int getWidth();
   public int getMargin();
-  public double getPixel(int x, int y);
-  public double getMax();
-  public double getMin();
+  public float getPixel(int x, int y);
+  public float getMax();
+  public float getMin();
 
-  public boolean setPixel(int x, int y, double value);
+  public boolean setPixel(int x, int y, float value);
 
-  public void flatFill(double v);
-  public void randomFill(double min, double max);
+  public void flatFill(float v);
+  public void randomFill(float min, float max);
 
-  public void clusterFill(double min, double max,
-    short clusterChance, short radius);
+  public void clusterFill(float min, float max,
+    int clusterChance, int radius);
 
   public void clusterFilter(int radius);
 
-  public void alternateClusterFilter(short radius);
+  public void alternateClusterFilter(int radius);
 
-  public void liquidFilter(double c, double d, double t, double u);
+  public void liquidFilter(float c, float d, float t, float u);
 
-  public void smoothFilter(short radius);
-  public void terraceFilter(short levels);
+  public void smoothFilter(int radius);
+  public void terraceFilter(int levels);
 
   public void walkerFilter(int incStep, int decStep);
 
   public void faultingFilter(int incStep, int decStep);
 
   public void normalize();
-  public void normalize(double max, double min);
+  public void normalize(float max, float min);
 
   public boolean isMasked();
 
-  public double[][] toDoubleArray();
-  public float[][] toFloatArray();
-
-  public void scale(double factor);
+  public float[][] toArray();
 
   public Heightmap copy();
 }

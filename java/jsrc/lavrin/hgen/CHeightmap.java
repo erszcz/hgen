@@ -15,28 +15,18 @@ public class CHeightmap implements Heightmap
     hm.flatFill(50);
     for (int i = 0; i < 5; i++)
       hm.walkerFilter(10, 10);
-    hm.normalize(0, 256);
+    hm.normalize();
 
     ((CHeightmap)hm).saveAsText("dump10x10.txt");
   }
 
-  public double[][] toDoubleArray() {
-    int w = getWidth();
-    int h = getHeight();
-    double[][] map = new double[h][w];
-    for (int i = 0; i < h; i++)
-      for (int j = 0; j < w; j++)
-        map[i][j] = getPixel(i, j);
-    return map;
-  }
-
-  public float[][] toFloatArray() {
+  public float[][] toArray() {
     int w = getWidth();
     int h = getHeight();
     float[][] map = new float[h][w];
     for (int i = 0; i < h; i++)
       for (int j = 0; j < w; j++)
-        map[i][j] = (float)getPixel(i, j);
+        map[i][j] = getPixel(i, j);
     return map;
   }
 
@@ -81,33 +71,33 @@ public class CHeightmap implements Heightmap
   public native int getHeight();
   public native int getWidth();
   public native int getMargin();
-  public native double getPixel(int x, int y);
-  public native double getMax();
-  public native double getMin();
+  public native float getPixel(int x, int y);
+  public native float getMax();
+  public native float getMin();
 
-  public native boolean setPixel(int x, int y, double value);
+  public native boolean setPixel(int x, int y, float value);
 
   // fills
-  public native void flatFill(double v);
-  public native void randomFill(double min, double max);
-  public native void clusterFill(double min, double max,
-    short clusterChance, short radius);
+  public native void flatFill(float v);
+  public native void randomFill(float min, float max);
+  public native void clusterFill(float min, float max,
+    int clusterChance, int radius);
 
   // filters
   public native void clusterFilter(int radius);
-  public native void alternateClusterFilter(short radius);
+  public native void alternateClusterFilter(int radius);
 
-  public void liquidFilter(double c, double d, double t, double u) {
+  public void liquidFilter(float c, float d, float t, float u) {
     liquidFilter(c, d, t, u, _wrap);
   }
-  private native void liquidFilter(double c, double d, double t, double u, boolean wrap);
+  private native void liquidFilter(float c, float d, float t, float u, boolean wrap);
 
-  public void smoothFilter(short radius) {
+  public void smoothFilter(int radius) {
     smoothFilter(radius, _wrap);
   }
-  private native void smoothFilter(short radius, boolean wrap);
+  private native void smoothFilter(int radius, boolean wrap);
 
-  public native void terraceFilter(short levels);
+  public native void terraceFilter(int levels);
 
   public void walkerFilter(int incStep, int decStep) {
     walkerFilter(incStep, decStep, _wrap);
@@ -120,13 +110,7 @@ public class CHeightmap implements Heightmap
   private native void faultingFilter(int incStep, int decStep, boolean wrap);
 
   public native void normalize();
-  public native void normalize(double max, double min);
-
-  public void scale(double factor) {
-    for (int i = 0; i < getHeight(); i++)
-      for (int j = 0; j < getWidth(); j++)
-        setPixel(i, j, getPixel(i, j) * factor);
-  }
+  public native void normalize(float max, float min);
 
   public native boolean isMasked();
 

@@ -32,45 +32,45 @@ JNIEXPORT jint JNICALL Java_lavrin_hgen_CHeightmap_getMargin
   return self2hmap(env, self)->getMargin();
 }
 
-JNIEXPORT jdouble JNICALL Java_lavrin_hgen_CHeightmap_getPixel
+JNIEXPORT jfloat JNICALL Java_lavrin_hgen_CHeightmap_getPixel
   (JNIEnv * env, jobject self, jint x, jint y)
 {
   return self2hmap(env, self)->getPixel(x, y);
 }
 
-JNIEXPORT jdouble JNICALL Java_lavrin_hgen_CHeightmap_getMax
+JNIEXPORT jfloat JNICALL Java_lavrin_hgen_CHeightmap_getMax
   (JNIEnv * env, jobject self)
 {
   return self2hmap(env, self)->getMax();
 }
 
-JNIEXPORT jdouble JNICALL Java_lavrin_hgen_CHeightmap_getMin
+JNIEXPORT jfloat JNICALL Java_lavrin_hgen_CHeightmap_getMin
   (JNIEnv * env, jobject self)
 {
   return self2hmap(env, self)->getMin();
 }
 
 JNIEXPORT jboolean JNICALL Java_lavrin_hgen_CHeightmap_setPixel
-  (JNIEnv * env, jobject self, jint x, jint y, jdouble val)
+  (JNIEnv * env, jobject self, jint x, jint y, jfloat val)
 {
   return self2hmap(env, self)->setPixel(x, y, val);
 }
 
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_flatFill
-  (JNIEnv * env, jobject self, jdouble val)
+  (JNIEnv * env, jobject self, jfloat val)
 {
   self2hmap(env, self)->flatFill(val);
 }
 
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_randomFill
-  (JNIEnv * env, jobject self, jdouble min, jdouble max)
+  (JNIEnv * env, jobject self, jfloat min, jfloat max)
 {
   self2hmap(env, self)->randomFill(min, max);
 }
 
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_clusterFill
   (JNIEnv * env, jobject self,
-   jdouble min, jdouble max, jshort clusterChance, jshort radius)
+   jfloat min, jfloat max, jint clusterChance, jint radius)
 {
   self2hmap(env, self)->clusterFill(min, max, clusterChance, radius);
 }
@@ -82,26 +82,26 @@ JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_clusterFilter
 }
 
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_alternateClusterFilter
-  (JNIEnv * env, jobject self, jshort radius)
+  (JNIEnv * env, jobject self, jint radius)
 {
   self2hmap(env, self)->alternateClusterFilter(radius);
 }
 
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_liquidFilter
   (JNIEnv * env, jobject self,
-   jdouble c, jdouble d, jdouble t, jdouble u, jboolean wrap)
+   jfloat c, jfloat d, jfloat t, jfloat u, jboolean wrap)
 {
   self2hmap(env, self)->liquidFilter(c, d, t, u, wrap);
 }
 
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_smoothFilter
-  (JNIEnv * env, jobject self, jshort radius, jboolean wrap)
+  (JNIEnv * env, jobject self, jint radius, jboolean wrap)
 {
   self2hmap(env, self)->smoothFilter(radius, wrap);
 }
 
 JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_terraceFilter
-  (JNIEnv * env, jobject self, jshort levels)
+  (JNIEnv * env, jobject self, jint levels)
 {
   self2hmap(env, self)->terraceFilter(levels);
 }
@@ -124,8 +124,8 @@ JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_normalize__
   self2hmap(env, self)->normalize();
 }
 
-JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_normalize__DD
-  (JNIEnv * env, jobject self, jdouble max, jdouble min)
+JNIEXPORT void JNICALL Java_lavrin_hgen_CHeightmap_normalize__FF
+  (JNIEnv * env, jobject self, jfloat max, jfloat min)
 {
   self2hmap(env, self)->normalize(max, min);
 }

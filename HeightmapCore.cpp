@@ -29,19 +29,23 @@ HeightmapCore::HeightmapCore(int height, int width, int margin)
 	realWidth = width + 2*margin;
 	this->margin = margin;
 
+	this->dirty = true;
+	this->cachedMin = 0;
+	this->cachedMax = 0;
+
 	// inicjalizacja mapy
-	//vector<double> tmp(realWidth, 0.);
-	//map = vector<vector<double> >(realHeight, tmp);
-  map = vector<vector<double> >(realHeight, vector<double>(realWidth, 0.));
+	//vector<float> tmp(realWidth, 0.);
+	//map = vector<vector<float> >(realHeight, tmp);
+  map = vector<vector<float> >(realHeight, vector<float>(realWidth, 0.));
 
 	// inicjalizacja maski (test)
-	//vector<double> tmpm(width, 0.);
-	//mask = vector<vector<double> >(height, tmpm);
-  mask = vector<vector<double> >(height, vector<double>(width, 0.));
+	//vector<float> tmpm(width, 0.);
+	//mask = vector<vector<float> >(height, tmpm);
+  mask = vector<vector<float> >(height, vector<float>(width, 0.));
 
   for (int i = 0; i < height; ++i)
     for (int j = 0; j < width; ++j)
-  //    mask[i][j] = j/(double)width;
+  //    mask[i][j] = j/(float)width;
       mask[i][j] = 1;
 }
 
@@ -59,17 +63,23 @@ HeightmapCore::HeightmapCore(const HeightmapCore& old)
 	this->realWidth = old.realWidth;
 	this->margin = old.margin;
 
-	map = vector<vector<double> >(old.map);
-  mask = vector<vector<double> >(old.mask);
+	this->dirty = old.dirty;
+	this->cachedMin = old.cachedMin;
+	this->cachedMax = old.cachedMax;
+
+	map = vector<vector<float> >(old.map);
+  mask = vector<vector<float> >(old.mask);
 }
 
-double HeightmapCore::getPixel(int x, int y) const
+float HeightmapCore::getPixel(int x, int y) const
 {
 	return map[margin + y][margin + x];
 }
 
-bool HeightmapCore::setPixel(int x, int y, double value)
+bool HeightmapCore::setPixel(int x, int y, float value)
 {
+  dirty = true;
+
 	if ((x > width - 1) || (y > height -1))
 		return false;
 
@@ -77,8 +87,10 @@ bool HeightmapCore::setPixel(int x, int y, double value)
 	return true;
 }
 
-void HeightmapCore::flatFill(double v)
+void HeightmapCore::flatFill(float v)
 {
+  dirty = true;
+
   if (hasMask()) 
   {
     for (int i = margin; i < margin + height; ++i)
@@ -93,8 +105,10 @@ void HeightmapCore::flatFill(double v)
   }
 }
 
-void HeightmapCore::randomFill(double min, double max)
+void HeightmapCore::randomFill(float min, float max)
 {
+  dirty = true;
+
   if (hasMask()) 
   {
     for (int i = margin; i <= realHeight - (margin + 1); ++i)
@@ -109,8 +123,10 @@ void HeightmapCore::randomFill(double min, double max)
   }
 }
 
-void HeightmapCore::clusterFill(double min, double max, short clusterChance, short radius)
+void HeightmapCore::clusterFill(float min, float max, int clusterChance, int radius)
 {
+  dirty = true;
+
 	if (radius > margin)
 		radius = margin;
 
@@ -153,13 +169,15 @@ void HeightmapCore::clusterFill(double min, double max, short clusterChance, sho
  * alternateClusterFilter
  *
  * @access public
- * @param short radius promien obszaru wokol biezacego piksela, ktory jest modyfikowanym jesli 0, to modyfikowany jest tylko
+ * @param int radius promien obszaru wokol biezacego piksela, ktory jest modyfikowanym jesli 0, to modyfikowany jest tylko
  *            biezacy piksel
  * @returns void
  * @author TSz
  */
-void HeightmapCore::alternateClusterFilter(short radius)
+void HeightmapCore::alternateClusterFilter(int radius)
 {
+  dirty = true;
+
 	if (radius > margin)
 		radius = margin;
 
@@ -218,10 +236,10 @@ void HeightmapCore::alternateClusterFilter(short radius)
         break;
     }
 
-    double src = map[iSrc][jSrc];
+    float src = map[iSrc][jSrc];
     if (hasMask()) 
     {
-      double srcWeight = 0.5;
+      float srcWeight = 0.5;
       for (int ii = -radius; ii <= radius; ++ii)
         for (int jj = -radius; jj <= radius; ++jj) {
           srcWeight = 0.5*mask[i + ii - margin][j + jj - margin];
@@ -241,18 +259,20 @@ void HeightmapCore::alternateClusterFilter(short radius)
 
 void HeightmapCore::clusterFilter(int radius)
 {
+  dirty = true;
+
 	if (radius > margin)
 		radius = margin;
 
-	list<double> tmpList;
+	list<float> tmpList;
 	for (int i = margin; i <= realHeight - (margin + 1); ++i)
 	{
 		for (int j = margin; j <= realWidth - (margin + 1); ++j)
 		{
 			tmpList.clear();
-			double tmp;
-			for (short ii = -radius; ii <= radius; ++ii)
-				for (short jj = -radius; jj <= radius; ++jj)
+			float tmp;
+			for (int ii = -radius; ii <= radius; ++ii)
+				for (int jj = -radius; jj <= radius; ++jj)
 					tmpList.push_back(map[i+ii][j+jj]);
 
 			if ( fabs( *min_element(tmpList.begin(), tmpList.end()) ) > fabs( *max_element(tmpList.begin(), tmpList.end()) ) )
@@ -262,7 +282,7 @@ void HeightmapCore::clusterFilter(int radius)
 
       if (hasMask()) 
       {
-        double tmpWeight = 0.5*mask[i - margin][j - margin];
+        float tmpWeight = 0.5*mask[i - margin][j - margin];
         map[i][j] = (1. - tmpWeight)*map[i][j] + tmpWeight*tmp;
       }
       else
@@ -273,25 +293,27 @@ void HeightmapCore::clusterFilter(int radius)
 	}
 }
 
-void HeightmapCore::liquidFilter(double c, double d, double t,
-                                 double u, bool wrap)
+void HeightmapCore::liquidFilter(float c, float d, float t,
+                                 float u, bool wrap)
 {
-	vector<vector<double> > buffer(map);
+  dirty = true;
 
-	double coefA = ((4 - 8*c*c*t*t/(d*d))/(u*t+2));
-	double coefB = ((u*t-2)/(u*t+2));
-	double coefC = ((2*c*c*t*t)/(d*d))/(u*t+2);
+	vector<vector<float> > buffer(map);
+
+	float coefA = ((4 - 8*c*c*t*t/(d*d))/(u*t+2));
+	float coefB = ((u*t-2)/(u*t+2));
+	float coefC = ((2*c*c*t*t)/(d*d))/(u*t+2);
 
   if (hasMask()) 
   {
     for (int i = margin; i <= realHeight - (margin + 1); ++i)
       for (int j = margin; j <= realWidth - (margin + 1); ++j)
       {
-        double p1 = coefA * map[i][j];
-        double p2 = coefB * buffer[i][j];
-        double p3 = coefC * (map[i+1][j] + map[i-1][j] + map[i][j+1] + map[i][j-1]);
+        float p1 = coefA * map[i][j];
+        float p2 = coefB * buffer[i][j];
+        float p3 = coefC * (map[i+1][j] + map[i-1][j] + map[i][j+1] + map[i][j-1]);
 
-        double w = mask[i - margin][j - margin];
+        float w = mask[i - margin][j - margin];
         buffer[i][j] = (1 - w)*buffer[i][j] + w*(p1 + p2 + p3);
       }
   }
@@ -300,9 +322,9 @@ void HeightmapCore::liquidFilter(double c, double d, double t,
     for (int i = margin; i <= realHeight - (margin + 1); ++i)
       for (int j = margin; j <= realWidth - (margin + 1); ++j)
       {
-        double p1 = coefA * map[i][j];
-        double p2 = coefB * buffer[i][j];
-        double p3 = coefC * (map[i+1][j] + map[i-1][j] + map[i][j+1] + map[i][j-1]);
+        float p1 = coefA * map[i][j];
+        float p2 = coefB * buffer[i][j];
+        float p3 = coefC * (map[i+1][j] + map[i-1][j] + map[i][j+1] + map[i][j-1]);
         buffer[i][j] = p1 + p2 + p3;
       }
   }
@@ -313,12 +335,14 @@ void HeightmapCore::liquidFilter(double c, double d, double t,
 		wrapEdges();
 }
 
-void HeightmapCore::smoothFilter(short radius, bool wrap)
+void HeightmapCore::smoothFilter(int radius, bool wrap)
 {
+  dirty = true;
+
 	if (radius > margin)
 		radius = margin;
 
-	double div = ((2*radius+1)*(2*radius+1));
+	float div = ((2*radius+1)*(2*radius+1));
 
   vector<int> sequence;
 	for (int i = 0; i < height; ++i)
@@ -332,10 +356,10 @@ void HeightmapCore::smoothFilter(short radius, bool wrap)
     int i = (*it)/width + margin;
     int j = (*it)%width + margin;
 
-    double temp = 0;
+    float temp = 0;
 
-    for (short ii = -radius; ii <= radius; ++ii)
-      for (short jj = -radius; jj <= radius; ++jj)
+    for (int ii = -radius; ii <= radius; ++ii)
+      for (int jj = -radius; jj <= radius; ++jj)
         temp += map[i+ii][j+jj];
 
     if (hasMask()) 
@@ -351,17 +375,21 @@ void HeightmapCore::smoothFilter(short radius, bool wrap)
 }
 
 //nie skonczone, ani sprawdzone!!!
-void HeightmapCore::terraceFilter(short levels)
+void HeightmapCore::terraceFilter(int levels)
 {
-	double min = getMin();
-	double max = getMax();
+	float min = getMin();
+	float max = getMax();
 	for (int i = margin; i <= realHeight - (margin + 1); ++i)
 		for (int j = margin; j <= realWidth - (margin + 1); ++j)
 			map[i][j] = round((map[i][j] - min)/(max - min)*levels)/levels*(max - min) + min;
+
+  dirty = true;
 }
 
 void HeightmapCore::walkerFilter(int incStep, int decStep, bool wrap)
 {
+  dirty = true;
+
 	// pozycja startowa
 	int y = int(_random(margin, margin + height - 1));
 	int x = int(_random(margin, margin + width - 1));
@@ -369,7 +397,7 @@ void HeightmapCore::walkerFilter(int incStep, int decStep, bool wrap)
 	// dlugosc zycia
 	int lifeSpan = int(_random(width * height, 3 * width * height));
 
-	short step;
+	int step;
 	if (_random(0, 100) > 50)
 		step = incStep;
 	else
@@ -415,6 +443,8 @@ void HeightmapCore::walkerFilter(int incStep, int decStep, bool wrap)
 
 void HeightmapCore::faultingFilter(int incStep, int decStep, bool wrap)
 {
+  dirty = true;
+
 	int radius = lround(_random(1, fmin(width, height)/2));
 	//cout << "radius: " << radius << endl;
 
@@ -460,10 +490,12 @@ void HeightmapCore::faultingFilter(int incStep, int decStep, bool wrap)
 
 void HeightmapCore::wrapEdges()
 {
+  dirty = true;
+
 /* wzor postepowania:
-	vector<vector<double> >::iterator fromBegin = map.begin() + margin;
-	vector<vector<double> >::iterator fromEnd = fromBegin + margin;
-	vector<vector<double> >::iterator toDest = map.end() - margin;
+	vector<vector<float> >::iterator fromBegin = map.begin() + margin;
+	vector<vector<float> >::iterator fromEnd = fromBegin + margin;
+	vector<vector<float> >::iterator toDest = map.end() - margin;
 	std::copy(fromBegin, fromEnd, toDest);
 */
 	// zawiniecie pionowe
@@ -477,22 +509,18 @@ void HeightmapCore::wrapEdges()
 	}
 }
 
-double HeightmapCore::getMax() const
+float HeightmapCore::getMax()
 {
-	list<double> maxList;
-	for (int i = 0; i < realHeight; ++i)
-		maxList.push_back( *max_element(map[i].begin(), map[i].end()) );
-	
-	return *max_element(maxList.begin(), maxList.end());
+  if (! dirty) return cachedMax;
+  this->_minmax();
+  return cachedMax;
 }
 
-double HeightmapCore::getMin() const
+float HeightmapCore::getMin()
 {
-	list<double> minList;
-	for (int i = 0; i < realHeight; ++i)
-		minList.push_back( *min_element(map[i].begin(), map[i].end()) );
-	
-	return *min_element(minList.begin(), minList.end());
+  if (! dirty) return cachedMin;
+  this->_minmax();
+  return cachedMin;
 }
 
 void HeightmapCore::normalize() {
@@ -500,6 +528,8 @@ void HeightmapCore::normalize() {
 }
 
 void HeightmapCore::join(HeightmapCore & neighbour, Direction edge) {
+  dirty = true;
+
 	if ((getWidth() != neighbour.getWidth()) || (getHeight() != neighbour.getHeight()))
 		return;
 
@@ -516,21 +546,21 @@ void HeightmapCore::join(HeightmapCore & neighbour, Direction edge) {
 		case HE_E:
 		case HE_W:
 			for (int i = 0; i < height; ++i) {
-				double modifiedRange = joinRange*(0.5 + 0.5*pow(sin(2.*M_PI*i/height), 2));
+				float modifiedRange = joinRange*(0.5 + 0.5*pow(sin(2.*M_PI*i/height), 2));
 				for (int j = 0; j < modifiedRange; ++j) {
-					double selfW = 0.5 + (j + 1.)/2./modifiedRange;
-					double neighbourW = 1. - selfW;
+					float selfW = 0.5 + (j + 1.)/2./modifiedRange;
+					float neighbourW = 1. - selfW;
 				
 					if (edge == HE_E) {
-						double newSelfVal = selfW*getPixel(width - 1 - j, i) + neighbourW*neighbour.getPixel(neighbourWidth - 1 - j, i);
-						double newNeighbourVal = selfW*neighbour.getPixel(j, i) + neighbourW*getPixel(j, i);			
+						float newSelfVal = selfW*getPixel(width - 1 - j, i) + neighbourW*neighbour.getPixel(neighbourWidth - 1 - j, i);
+						float newNeighbourVal = selfW*neighbour.getPixel(j, i) + neighbourW*getPixel(j, i);			
 					
 						setPixel(width - 1 - j, i, newSelfVal);
 						neighbour.setPixel(j, i, newNeighbourVal);
 					}
 					else {
-						double newSelfVal = selfW*getPixel(j, i) + neighbourW*neighbour.getPixel(j, i);
-						double newNeighbourVal = selfW*neighbour.getPixel(neighbourWidth - 1 - j, i) + neighbourW*getPixel(neighbourWidth - 1 - j, i);			
+						float newSelfVal = selfW*getPixel(j, i) + neighbourW*neighbour.getPixel(j, i);
+						float newNeighbourVal = selfW*neighbour.getPixel(neighbourWidth - 1 - j, i) + neighbourW*getPixel(neighbourWidth - 1 - j, i);			
 					
 						setPixel(j, i, newSelfVal);
 						neighbour.setPixel(neighbourWidth - 1 - j, i, newNeighbourVal);
@@ -543,21 +573,20 @@ void HeightmapCore::join(HeightmapCore & neighbour, Direction edge) {
 		case HE_N:
 		case HE_S:
 			for (int j = 0; j < width; ++j) {
-				double modifiedRange = joinRange*(0.5 + 0.5*pow(sin(2.*M_PI*j/width), 2));
+				float modifiedRange = joinRange*(0.5 + 0.5*pow(sin(2.*M_PI*j/width), 2));
 				for (int i = 0; i < modifiedRange; ++i) {
-					double selfW = 0.5 + (i + 1.)/2./modifiedRange;
-					double neighbourW = 1. - selfW;
+					float selfW = 0.5 + (i + 1.)/2./modifiedRange;
+					float neighbourW = 1. - selfW;
 				
 					if (edge == HE_S) {
-						double newSelfVal = selfW*getPixel(j, height - 1 - i) + neighbourW*neighbour.getPixel(j, neighbourHeight - 1 - i);
-						double newNeighbourVal = selfW*neighbour.getPixel(j, i) + neighbourW*getPixel(j, i);			
+						float newSelfVal = selfW*getPixel(j, height - 1 - i) + neighbourW*neighbour.getPixel(j, neighbourHeight - 1 - i);
+						float newNeighbourVal = selfW*neighbour.getPixel(j, i) + neighbourW*getPixel(j, i);			
 					
 						setPixel(j, height - 1 - i, newSelfVal);
 						neighbour.setPixel(j, i, newNeighbourVal);
-					}
-					else {
-						double newSelfVal = selfW*getPixel(j, i) + neighbourW*neighbour.getPixel(j, i);
-						double newNeighbourVal = selfW*neighbour.getPixel(j, neighbourHeight - 1 - i) + neighbourW*getPixel(j, neighbourHeight - 1 - i);			
+					} else {
+						float newSelfVal = selfW*getPixel(j, i) + neighbourW*neighbour.getPixel(j, i);
+						float newNeighbourVal = selfW*neighbour.getPixel(j, neighbourHeight - 1 - i) + neighbourW*getPixel(j, neighbourHeight - 1 - i);			
 					
 						setPixel(j, i, newSelfVal);
 						neighbour.setPixel(j, neighbourHeight - 1 - i, newNeighbourVal);
@@ -569,11 +598,13 @@ void HeightmapCore::join(HeightmapCore & neighbour, Direction edge) {
 	}
 }
 
-void HeightmapCore::normalize(double max, double min)
+void HeightmapCore::normalize(float max, float min)
 {
+  dirty = true;
+
 	if (min == max) {
-		vector<double> tmp(realWidth, .5);
-		map = vector<vector<double> >(realHeight, tmp);
+		vector<float> tmp(realWidth, .5);
+		map = vector<vector<float> >(realHeight, tmp);
 	}
 	else {
 		for (int i = 0; i < realHeight; ++i)
@@ -584,19 +615,19 @@ void HeightmapCore::normalize(double max, double min)
 	}
 }
 
-bool HeightmapCore::hasMask()
+bool HeightmapCore::hasMask() const
 {
-  return (mask.size() == (int)height && mask[0].size() == (int)width);
+  return (mask.size() == height && mask[0].size() == width);
 }
 
-double HeightmapCore::_random(double min, double max) const
+float HeightmapCore::_random(float min, float max) const
 {
 // funkcja przeskalowujaca dowolny przedzial na <0,1>
-	const double P[] = {0., min}; // punkt P, dwa miejsca tablicy - dwie wspolrzedne
-	const double Q[] = {1., max};
+	const float P[] = {0., min}; // punkt P, dwa miejsca tablicy - dwie wspolrzedne
+	const float Q[] = {1., max};
 
-	double a = (P[1] - Q[1]) / -1.;
-	double b = Q[1] - a * Q[0];
+	float a = (P[1] - Q[1]) / -1.;
+	float b = Q[1] - a * Q[0];
 
 	return a * rand()/RAND_MAX + b;
 }
@@ -604,4 +635,17 @@ double HeightmapCore::_random(double min, double max) const
 bool HeightmapCore::_isValidPixel(int x, int y) const
 {
 	return x < width && y < height;
+}
+
+void HeightmapCore::_minmax() {
+  if (! dirty) return;
+
+  cachedMin = cachedMax = map[margin][margin];
+	for (int i = margin; i <= realHeight - (margin + 1); ++i)
+		for (int j = margin; j <= realWidth - (margin + 1); ++j) {
+      if (map[i][j] < cachedMin) cachedMin = map[i][j];
+      if (map[i][j] > cachedMax) cachedMax = map[i][j];
+    }
+
+  dirty = false;
 }

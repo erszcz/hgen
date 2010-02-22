@@ -11,17 +11,16 @@ public class Landscape extends Shape3D
   private final static int SIDE_LEN = 128;
     /* Should be even, since the code assumes that SIDE_LEN/2 is 
        a whole number. */
-  private final static short MARGIN = SIDE_LEN / 8;
+  private final static int MARGIN = SIDE_LEN / 8;
 
   private Heightmap hmap;
-  private Heightmap shot;
-    // normalized and scaled for rendering heightmap snapshot
 
   public Landscape() {
     setCapability(ALLOW_GEOMETRY_READ);
     setCapability(ALLOW_GEOMETRY_WRITE);
 
     hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
+//    hmap.setWrapped(false);
     initHeightmap();
 
     createGeometry();
@@ -29,22 +28,18 @@ public class Landscape extends Shape3D
   } // end of Landscape()
 
   private void initHeightmap() {
-//    hmap.flatFill(0.0f);
-    hmap.clusterFill(0, 100, (short)50, (short)(MARGIN / 2));
-
-    shot = hmap.copy();
-    shot.normalize();
-    shot.scale(20.0);
+    hmap.flatFill(0.0f);
+//    hmap.clusterFill(0, 100, 50, MARGIN / 2);
+//    hmap.walkerFilter(5, 15);
+//    hmap.walkerFilter(7, 2);
+    hmap.walkerFilter(1, 1);
+    hmap.smoothFilter(1);
+    hmap.smoothFilter(MARGIN / 3);
   }
 
   public void update() {
-    hmap.smoothFilter((short)1);
-
-    shot = hmap.copy();
-    shot.normalize();
-    shot.scale(20.0);
-
-    createGeometry();
+//    hmap.smoothFilter(MARGIN / 3);
+//    createGeometry();
   }
 
 
@@ -58,7 +53,7 @@ public class Landscape extends Shape3D
     plane.setCoordinates(0, coords);
 
     // generate normals
-    NormalGenerator ng = new NormalGenerator(Math.toRadians(30));
+    NormalGenerator ng = new NormalGenerator(Math.toRadians(45));
     GeometryInfo gInfo = new GeometryInfo(plane);
     ng.generateNormals(gInfo);
 
@@ -87,12 +82,22 @@ public class Landscape extends Shape3D
     float xc = x - SIDE_LEN / 2;
     float zc = z - SIDE_LEN / 2;
 
+    float min = hmap.getMin();
+    float max = hmap.getMax();
+    float scale = 20.0f;
+
     // points created in counter-clockwise order from bottom left
-    coords[i]   = new Point3f(xc,        (float)shot.getPixel(z+1, x),   zc + 1.0f);
-    coords[i+1] = new Point3f(xc + 1.0f, (float)shot.getPixel(z+1, x+1), zc + 1.0f);
-    coords[i+2] = new Point3f(xc + 1.0f, (float)shot.getPixel(z, x+1),   zc);
-    coords[i+3] = new Point3f(xc,        (float)shot.getPixel(z, x),     zc);
+    coords[i]   = new Point3f(xc, getNS(z+1, x, min, max, scale), zc + 1.0f);
+    coords[i+1] = new Point3f(xc + 1.0f, getNS(z+1, x+1, min, max, scale), zc + 1.0f);
+    coords[i+2] = new Point3f(xc + 1.0f, getNS(z, x+1, min, max, scale), zc);
+    coords[i+3] = new Point3f(xc, getNS(z, x, min, max, scale), zc);
   }  // end of createTile()
+
+  // return normalized and scaled value of heightmap at x, y
+  private float getNS(int x, int y, float min, float max, float scale)
+  {
+    return (hmap.getPixel(x, y) - min) / (max - min) * scale;
+  }
 
 
   private void createAppearance() {

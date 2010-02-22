@@ -24,26 +24,26 @@ class HeightmapCore {
 	int getHeight() const { return height; }
 	int getWidth() const { return width; }
 	int getMargin() const { return margin; }
-	double getPixel(int x, int y) const;
-	double getMax() const;
-	double getMin() const;
+	float getPixel(int x, int y) const;
+	float getMax();
+	float getMin();
 
-	bool setPixel(int x, int y, double value);
+	bool setPixel(int x, int y, float value);
 
-	void flatFill(double v = 0.0);
-	void randomFill(double min = -500., double max = 500.);
+	void flatFill(float v = 0.0);
+	void randomFill(float min = -500., float max = 500.);
 
-	void clusterFill(double min = -500., double max = 500.,
-	                 short clusterChance = 60, short radius = 1);
+	void clusterFill(float min = -500., float max = 500.,
+	                 int clusterChance = 60, int radius = 1);
 
 	void clusterFilter(int radius = 1);
 
-	void alternateClusterFilter(short radius = 0);
+	void alternateClusterFilter(int radius = 0);
 
-	void liquidFilter(double c = 100., double d = 10., double t = .033, double u = 100., bool wrap = true);
+	void liquidFilter(float c = 100., float d = 10., float t = .033, float u = 100., bool wrap = true);
 
-	void smoothFilter(short radius = 1, bool wrap = true);
-	void terraceFilter(short levels);
+	void smoothFilter(int radius = 1, bool wrap = true);
+	void terraceFilter(int levels);
 
 	void walkerFilter(int incStep, int decStep, bool wrap);
 
@@ -52,14 +52,14 @@ class HeightmapCore {
 	void wrapEdges();
 
 	void normalize();
-	void normalize(double max, double min);
+	void normalize(float max, float min);
 
 	void join(HeightmapCore & neighbour, Direction edge);
 
-  bool hasMask();
+  bool hasMask() const;
 
-	// funkcja tymczasowa. na dluzsza mete trzeba bedzie overloadnac << dla plikow i, byc moze, dla konsoli
-	void print(double val) const
+	// temp
+	void print(float val) const
 	{
 		cout.width(3);
 		cout << val;
@@ -82,14 +82,19 @@ class HeightmapCore {
 	// fin
 
 	private:
-	double _random(double min, double max) const;
+	float _random(float min, float max) const;
 	bool _isValidPixel(int x, int y) const;
+  void _minmax(); // calculate cachedMin and cachedMax and set dirty to false
+    // as long as dirty stays false cached values are valid
 	
 	int height, realHeight;
 	int width, realWidth;
 	int margin;
-  vector<vector<double> > map;
-  vector<vector<double> > mask;
+  vector<vector<float> > map;
+  vector<vector<float> > mask;
+
+  float cachedMin, cachedMax;
+  bool dirty;
 };
 
 #endif
