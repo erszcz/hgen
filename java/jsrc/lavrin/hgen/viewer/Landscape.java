@@ -11,65 +11,41 @@ public class Landscape extends Shape3D
   private final static int SIDE_LEN = 128;
     /* Should be even, since the code assumes that SIDE_LEN/2 is 
        a whole number. */
+  private final static short MARGIN = SIDE_LEN / 8;
 
   private Heightmap hmap;
-  private float[][] heights;   // height map for the floor
-
+  private Heightmap shot;
+    // normalized and scaled for rendering heightmap snapshot
 
   public Landscape() {
     setCapability(ALLOW_GEOMETRY_READ);
     setCapability(ALLOW_GEOMETRY_WRITE);
 
-    hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1);
-    heights = makeHills();
+    hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
+    initHeightmap();
+
     createGeometry();
     createAppearance();
   } // end of Landscape()
 
+  private void initHeightmap() {
+//    hmap.flatFill(0.0f);
+    hmap.clusterFill(0, 100, (short)50, (short)(MARGIN / 2));
 
-  public void update() {
-//    hmap.faultingFilter(10, 5);
-//    hmap.walkerFilter(10, 5);
-    hmap.smoothFilter((short)1);
-
-    Heightmap tmp = hmap.copy();
-    tmp.normalize();
-    tmp.scale(20.0);
-
-    heights = tmp.toFloatArray();
-    createGeometry();
+    shot = hmap.copy();
+    shot.normalize();
+    shot.scale(20.0);
   }
 
+  public void update() {
+    hmap.smoothFilter((short)1);
 
-  private float[][] makeHills() {
-//    float[][] heights = new float[SIDE_LEN+1][SIDE_LEN+1];  
-                   // include front and right edges of floor
+    shot = hmap.copy();
+    shot.normalize();
+    shot.scale(20.0);
 
-//    for (int i = 0; i < SIDE_LEN+1; i++)
-//      for (int j = 0; j < SIDE_LEN+1; j++)
-//        heights[i][j] = 0.0f;
-
-//    hmap.flatFill(0.1);
-    hmap.clusterFill(0, 20, (short)50, (short)1);
-
-//    hmap.walkerFilter(5,0);
-//    hmap.walkerFilter(10,0);
-//    hmap.walkerFilter(7,0);
-//    hmap.walkerFilter(3,0);
-//
-
-//
-//    for (int i = 0; i < 200; i++)
-    for (int i = 0; i < 0; i++)
-      hmap.faultingFilter(1, 1);
-//
-
-//    hmap.normalize(50, 0);
-//    hmap.normalize(30, 0);
-    float[][] heights = hmap.toFloatArray();  
-
-    return heights;
-  }  // end of makeHills()
+    createGeometry();
+  }
 
 
   private void createGeometry() {
@@ -87,19 +63,12 @@ public class Landscape extends Shape3D
     ng.generateNormals(gInfo);
 
     setGeometry(gInfo.getGeometryArray());
-//    setGeometry(plane);
   }  // end of createGeometry()
 
 
-  private Point3f[] createCoords()
-  /* Create the (x,y,z) coordinates for the scene. The (x,z) 
-     values run from -SIDE_LEN/2 to SIDE_LEN/2, centered on (0,0). Each
-     vertex is 1 unit apart, so SIDE_LEN should be even.
-     For each (x,z) value, createTile() creates for 4 coordinates for 
-     a quad (tile).
-  */
-  {
-    Point3f[] coords = new Point3f[SIDE_LEN*SIDE_LEN*4];   // since each tile has 4 coords
+  private Point3f[] createCoords() {
+    Point3f[] coords = new Point3f[SIDE_LEN*SIDE_LEN*4];
+      // since each tile has 4 coords
     int i = 0;
     for(int z=0; z <= SIDE_LEN-1; z++) {    // skip z's front row
       for(int x=0; x <= SIDE_LEN-1; x++) {  // skip x's right column
@@ -119,10 +88,10 @@ public class Landscape extends Shape3D
     float zc = z - SIDE_LEN / 2;
 
     // points created in counter-clockwise order from bottom left
-    coords[i] = new Point3f(xc, heights[z+1][x], zc+1.0f);
-    coords[i+1] = new Point3f(xc+1.0f, heights[z+1][x+1], zc+1.0f);
-    coords[i+2] = new Point3f(xc+1.0f, heights[z][x+1], zc);
-    coords[i+3] = new Point3f(xc, heights[z][x], zc);   
+    coords[i]   = new Point3f(xc,        (float)shot.getPixel(z+1, x),   zc + 1.0f);
+    coords[i+1] = new Point3f(xc + 1.0f, (float)shot.getPixel(z+1, x+1), zc + 1.0f);
+    coords[i+2] = new Point3f(xc + 1.0f, (float)shot.getPixel(z, x+1),   zc);
+    coords[i+3] = new Point3f(xc,        (float)shot.getPixel(z, x),     zc);
   }  // end of createTile()
 
 
