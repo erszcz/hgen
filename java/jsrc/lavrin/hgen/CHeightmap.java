@@ -112,6 +112,12 @@ public class CHeightmap implements Heightmap
   public native void normalize();
   public native void normalize(float max, float min);
 
+  public void scale(float scale) {
+    for (int i = 0; i < getHeight(); i++)
+      for (int j = 0; j < getWidth(); j++)
+        setPixel(i, j, getPixel(i, j) * scale);
+  }
+
   public native boolean isMasked();
 
   // native interface stuff

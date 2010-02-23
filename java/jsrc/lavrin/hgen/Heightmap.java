@@ -36,6 +36,8 @@ public interface Heightmap
   public void normalize();
   public void normalize(float max, float min);
 
+  public void scale(float scale);
+
   public boolean isMasked();
 
   public float[][] toArray();
