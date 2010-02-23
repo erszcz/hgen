@@ -8,7 +8,7 @@ import lavrin.hgen.*;
 
 public class Landscape extends Shape3D 
 {
-  private final static int SIDE_LEN = 128;
+  private final static int SIDE_LEN = 256;
     /* Should be even, since the code assumes that SIDE_LEN/2 is 
        a whole number. */
   private final static int MARGIN = SIDE_LEN / 8;
@@ -32,9 +32,16 @@ public class Landscape extends Shape3D
 //    hmap.clusterFill(0, 100, 50, MARGIN / 2);
 //    hmap.walkerFilter(5, 15);
 //    hmap.walkerFilter(7, 2);
+
+//    hmap.walkerFilter(1, 1);
+//    hmap.smoothFilter(MARGIN);
+//    hmap.smoothFilter(1);
+
+    for (int i = 0; i < 100; i++)
+      hmap.faultingFilter(10,5);
+    hmap.smoothFilter(MARGIN / 3);
     hmap.walkerFilter(1, 1);
     hmap.smoothFilter(1);
-    hmap.smoothFilter(MARGIN / 3);
   }
 
   public void update() {
@@ -53,7 +60,7 @@ public class Landscape extends Shape3D
     plane.setCoordinates(0, coords);
 
     // generate normals
-    NormalGenerator ng = new NormalGenerator(Math.toRadians(45));
+    NormalGenerator ng = new NormalGenerator(Math.toRadians(30));
     GeometryInfo gInfo = new GeometryInfo(plane);
     ng.generateNormals(gInfo);
 
@@ -108,17 +115,17 @@ public class Landscape extends Shape3D
     pa.setCullFace(PolygonAttributes.CULL_NONE);
     app.setPolygonAttributes(pa);
 
-    // shiny metal material (from Arms3D, Grabber.java)
-    Color3f alumDiffuse = new Color3f(0.37f, 0.37f, 0.37f);
-    Color3f black = new Color3f(0.0f, 0.0f, 0.0f);
-    Color3f gray  = new Color3f(0.4f, 0.4f, 0.4f);
-    Color3f blue  = new Color3f(0.0f, 0.0f, 1.0f);
-    Color3f red   = new Color3f(1.0f, 0.0f, 0.0f);
-    Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
-    Color3f alumSpecular = new Color3f(0.89f, 0.89f, 0.89f);
+    Color3f black     = new Color3f(0.0f, 0.0f, 0.0f);
+    Color3f gray      = new Color3f(0.1f, 0.1f, 0.1f);
+    Color3f blue      = new Color3f(0.0f, 0.0f, 1.0f);
+    Color3f navy      = new Color3f(0.0f, 0.0f, 0.1f);
+    Color3f darkBrown = new Color3f(0.1f, 0.03f, 0.0f);
+    Color3f red       = new Color3f(1.0f, 0.0f, 0.0f);
+    Color3f brown     = new Color3f(0.7f, 0.2f, 0.0f);
+    Color3f white     = new Color3f(1.0f, 1.0f, 1.0f);
 
-    Material mat = new Material(black, black, red, blue, 5);
-       // sets ambient, emissive, diffuse, specular, shininess
+    Material mat = new Material(darkBrown, black, brown, blue, 45);
+      // sets ambient, emissive, diffuse, specular, shininess
     mat.setLightingEnable(true);
     app.setMaterial(mat);
 

@@ -58,7 +58,7 @@ public class ViewerPanel extends JPanel
 
 
   private void createSceneGraph() 
-  // initilise the scene
+  // initialize the scene
   { 
     sceneBG = new BranchGroup();
     bounds = new BoundingSphere(new Point3d(0,0,0), BOUNDSIZE);   
@@ -71,42 +71,50 @@ public class ViewerPanel extends JPanel
 
     lightScene();         // the lights
     addBackground();      // the sky
-    addFloor();           // the multi-textured floor (and splashes)
+    addLandscape();       // the multi-textured land (and splashes)
 //    addSphere();
     addWedge();
 
-//    sceneBG.compile();   // fix the scene
+    sceneBG.compile();   // fix the scene
   } // end of createSceneGraph()
 
 
   private void lightScene()
   /* One ambient light, 2 directional lights */
   {
+    Color3f twilight = new Color3f(0.1f, 0.2f, 0.2f);
     Color3f white = new Color3f(1.0f, 1.0f, 1.0f);
     Color3f blue  = new Color3f(0.0f, 0.0f, 1.0f);
 
     // Set up the ambient light
     // ambient light lights up every corner of the universe equally
-//    AmbientLight ambientLightNode = new AmbientLight(white);
-//    ambientLightNode.setInfluencingBounds(bounds);
-//    sceneBG.addChild(ambientLightNode);
+//    AmbientLight ambLight = new AmbientLight(twilight);
+    AmbientLight ambLight = new AmbientLight(white);
+    ambLight.setInfluencingBounds(bounds);
+    sceneBG.addChild(ambLight);
 
     // directional lights
-    // beams of these lights come from infinity, are parallel and directed dir -> 0,0,0
-    Vector3f light1Direction  = new Vector3f(20.0f, 1.0f, 0.0f);
-       // left, down, backwards 
-//    Vector3f light2Direction  = new Vector3f(1.0f, -1.0f, 1.0f);
-       // right, down, forwards
+    // beams of these lights come from infinity, are parallel
+    // and pointed at origin
+    DirectionalLight dirLight1 = new DirectionalLight(white,
+      /* direction: */ new Vector3f( 20.0f, 5.0f, 0.0f));
+    dirLight1.setInfluencingBounds(bounds);
+    sceneBG.addChild(dirLight1);
 
-    DirectionalLight dLight1 = 
-            new DirectionalLight(white, light1Direction);
-    dLight1.setInfluencingBounds(bounds);
-    sceneBG.addChild(dLight1);
+    DirectionalLight dirLight2 = new DirectionalLight(blue,
+      /* direction: */ new Vector3f(0.0f, 10.0f, -10.0f));
+    dirLight2.setInfluencingBounds(bounds);
+    sceneBG.addChild(dirLight2);
 
-//    DirectionalLight dLight2 = 
-//        new DirectionalLight(blue, light2Direction);
-//    dLight2.setInfluencingBounds(bounds);
-//    sceneBG.addChild(dLight2);
+    DirectionalLight dirLight3 = new DirectionalLight(white,
+      /* direction: */ new Vector3f(-20.0f, 4.0f, 0.0f));
+    dirLight3.setInfluencingBounds(bounds);
+    sceneBG.addChild(dirLight3);
+
+    DirectionalLight dirLight4 = new DirectionalLight(white,
+      /* direction: */ new Vector3f(0.0f, 7.0f, 10.0f));
+    dirLight4.setInfluencingBounds(bounds);
+    sceneBG.addChild(dirLight4);
   }  // end of lightScene()
 
 
@@ -114,28 +122,21 @@ public class ViewerPanel extends JPanel
   private void addBackground() {
     Background back = new Background();
     back.setApplicationBounds( bounds );
-    back.setColor(0.17f, 0.65f, 0.92f);    // sky colour
+//    back.setColor(0.17f, 0.65f, 0.92f);    // sky colour
+    back.setColor(0.65f, 0.65f, 0.42f);    // sky colour
     sceneBG.addChild( back );
   }  // end of addBackground()
 
 
-  private void addFloor()
-  // the floor is a multi-textured mesh, with splashes of extra textures
-  {
-    Landscape floor = new Landscape();
+  private void addLandscape() {
+    Landscape land = new Landscape();
 
-    /* Start building an ordered group of floor meshes.
-       Ordering avoids rendering conflicts between the meshes. */
-    OrderedGroup floorOG = new OrderedGroup();
-    floorOG.addChild(floor);
+    sceneBG.addChild(land);
 
-    // add all the meshes to the scene
-    sceneBG.addChild( floorOG );
-
-    TimeBehavior tb = new TimeBehavior(UPDATE_TIME, floor);
+    TimeBehavior tb = new TimeBehavior(UPDATE_TIME, land);
     tb.setSchedulingBounds(bounds);
     sceneBG.addChild(tb);
-  }  // end of addFloor()
+  }  // end of addLandscape()
 
 
   private void addSphere() {
@@ -183,8 +184,8 @@ public class ViewerPanel extends JPanel
     targetTG.setTransform(t3d);
 
     // set up keyboard controls to move the viewport
-    ViewPlatformBehavior controlBehavior = new UserControlsBehavior(canvas3D);
-//    ViewPlatformBehavior controlBehavior = new KeyBehavior();
+//    ViewPlatformBehavior controlBehavior = new UserControlsBehavior(canvas3D);
+    ViewPlatformBehavior controlBehavior = new OrbitBehavior();
     controlBehavior.setSchedulingBounds(bounds);
     vp.setViewPlatformBehavior(controlBehavior);
   }
