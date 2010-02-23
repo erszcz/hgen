@@ -42,5 +42,7 @@ public interface Heightmap
 
   public float[][] toArray();
 
+  public void saveAsText(String filename);
+
   public Heightmap copy();
 }
