@@ -22,9 +22,9 @@ public class ViewerPanel extends JPanel
 
   private static final int BOUNDSIZE = 500;  // larger than world
 
-  private final static float Z_START = 80.0f;
+  private final static float Z_START = 200.0f;
 
-  private static final int UPDATE_TIME = 100;  // ms, for updating the balls
+  private static final int UPDATE_TIME = 250;  // ms, for updating the balls
 
   private Canvas3D canvas3D;
 
@@ -184,8 +184,8 @@ public class ViewerPanel extends JPanel
     targetTG.setTransform(t3d);
 
     // set up keyboard controls to move the viewport
-//    ViewPlatformBehavior controlBehavior = new UserControlsBehavior(canvas3D);
-    ViewPlatformBehavior controlBehavior = new OrbitBehavior();
+    ViewPlatformBehavior controlBehavior = new UserControlsBehavior(canvas3D);
+//    ViewPlatformBehavior controlBehavior = new OrbitBehavior();
     controlBehavior.setSchedulingBounds(bounds);
     vp.setViewPlatformBehavior(controlBehavior);
   }

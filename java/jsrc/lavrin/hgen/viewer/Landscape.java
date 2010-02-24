@@ -8,18 +8,21 @@ import lavrin.hgen.*;
 
 public class Landscape extends Shape3D 
 {
-  private final static int SIDE_LEN = 256;
+//  private final static int SIDE_LEN = 256;
     /* Should be even, since the code assumes that SIDE_LEN/2 is 
        a whole number. */
-  private final static int MARGIN = SIDE_LEN / 8;
+//  private final static int MARGIN = SIDE_LEN / 8;
+  private int SIDE_LEN;
+  private int MARGIN;
 
   private Heightmap hmap;
+  private HeightmapOperator hop;
 
   public Landscape() {
     setCapability(ALLOW_GEOMETRY_READ);
     setCapability(ALLOW_GEOMETRY_WRITE);
 
-    hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
+//    hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
 //    hmap.setWrapped(false);
     initHeightmap();
 
@@ -28,7 +31,7 @@ public class Landscape extends Shape3D
   } // end of Landscape()
 
   private void initHeightmap() {
-    hmap.flatFill(0.0f);
+//    hmap.flatFill(0.0f);
 //    hmap.clusterFill(0, 100, 50, MARGIN / 2);
 //    hmap.walkerFilter(5, 15);
 //    hmap.walkerFilter(7, 2);
@@ -37,16 +40,34 @@ public class Landscape extends Shape3D
 //    hmap.smoothFilter(MARGIN);
 //    hmap.smoothFilter(1);
 
-    for (int i = 0; i < 100; i++)
-      hmap.faultingFilter(10,5);
-    hmap.smoothFilter(MARGIN / 3);
-    hmap.walkerFilter(1, 1);
-    hmap.smoothFilter(1);
+//    for (int i = 0; i < 100; i++)
+//      hmap.faultingFilter(10,5);
+//    hmap.smoothFilter(MARGIN / 3);
+//    hmap.walkerFilter(1, 1);
+//    hmap.smoothFilter(1);
+
+//    HeightmapOperator hop =
+//      new HeightmapOperator(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
+//    hop.load("hmap2_in.csv");
+//    hop.commit();
+//    hmap = hop.getHeightmap();
+
+    try {
+      hop = new HeightmapOperator("viewer_in.csv");
+//      hop.commit();
+      hmap = hop.getHeightmap();
+      SIDE_LEN = hmap.getWidth();
+      MARGIN = hmap.getMargin();
+    } catch (Exception e) {
+      e.printStackTrace();
+      hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
+    }
   }
 
   public void update() {
 //    hmap.smoothFilter(MARGIN / 3);
-//    createGeometry();
+    hop.step();
+    createGeometry();
   }
 
 
@@ -91,7 +112,7 @@ public class Landscape extends Shape3D
 
     float min = hmap.getMin();
     float max = hmap.getMax();
-    float scale = 20.0f;
+    float scale = 70.0f;
 
     // points created in counter-clockwise order from bottom left
     coords[i]   = new Point3f(xc, getNS(z+1, x, min, max, scale), zc + 1.0f);
