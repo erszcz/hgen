@@ -78,6 +78,15 @@
   </target>
 
 
+  <target name="test-operator" depends="init">
+    <java fork="true"
+      classpath="${dist}/lib/MyProject-${DSTAMP}.jar"
+      classname="lavrin.hgen.HeightmapOperator">
+      <jvmarg value="-Djava.library.path=." />
+    </java>
+  </target>
+
+
   <!-- clean -->
   <target name="make-clean-all">
     <exec executable="${make}">
