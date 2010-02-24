@@ -1,0 +1,4 @@
+1	initialize	129	129	64
+100	faultingFilter	10	-3
+100	liquidFilter	50.0	10.0	0.033	20.0
+# vim: noet ts=8 sts=8 sw=8

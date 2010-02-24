@@ -1,0 +1,12 @@
+1	initialize	129	129	64
+1	randomFill	0	10
+2	smoothFilter	1
+1	walkerFilter	3	0
+30	liquidFilter	200.0	50.0	0.033	100.0
+1	walkerFilter	1	0
+20	liquidFilter	100.0	10.0	0.033	100.0
+1	walkerFilter	1	0
+20	liquidFilter	100.0	10.0	0.033	100.0
+1	walkerFilter	1	0
+100	liquidFilter	200.0	10.0	0.033	100.0
+# vim: noet ts=8 sts=8 sw=8

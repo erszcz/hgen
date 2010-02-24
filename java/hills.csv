@@ -1,0 +1,14 @@
+1	initialize	385	385	32
+1	flatFill	0.0
+70	faultingFilter	1	1
+1	terraceFilter	4
+#1	smoothFilter	16
+1	normalize
+1	scale		30
+1	walkerFilter	1	1
+1	clusterFilter	4
+1	clusterFilter	8
+1	smoothFilter	4
+2	smoothFilter	1
+#1	normalize
+# vim: noet ts=8 sts=8 sw=8
