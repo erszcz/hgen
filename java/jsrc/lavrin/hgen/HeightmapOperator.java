@@ -22,6 +22,14 @@ package lavrin.hgen;
       This operation must come on the first input line (comments are ignored).
 */
 
+// TODO:
+//  - Create HeightmapOperation class for history/pending lists.
+//    The Map<String, Object> construct used now has specific structure
+//    and some conventions which must be preserved when handling it and they
+//    may be easily broken or forgotten.
+//  - exceptions in 'load'
+//  - operations different than 'initialize' in 'step'
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,7 +55,7 @@ public class HeightmapOperator {
       hop.getHeightmap().saveAsText("hmap1_dump.txt");
 
 
-//      HeightmapOperator hop2 = new HeightmapOperator(9, 9, 1);
+      HeightmapOperator hop2 = new HeightmapOperator(9, 9, 1);
     } catch (HeightmapUninitializedException e) {
       e.printStackTrace();
     }
@@ -66,8 +74,12 @@ public class HeightmapOperator {
 
     Map<String, Object> init = new HashMap<String, Object>(3);
     init.put("qty", 1);
-    init.put("name", "initialize");
-    init.put("args", Arrays.asList(new int[]{width, height, margin}));
+    init.put("name", new String("initialize"));
+    init.put("args", Arrays.asList( new String[]{
+      String.format("%d", width),
+      String.format("%d", height),
+      String.format("%d", margin)
+    } ));
     pending.add(init);
     step(); // perform and register the init operation
   }
