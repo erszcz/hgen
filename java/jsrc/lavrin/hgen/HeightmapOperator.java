@@ -13,7 +13,9 @@ package lavrin.hgen;
 
   Allowed operations are those supported by the Heightmap interface:
     - *Fill, *Filter,
-    - normalize, normalize(max, min), scale(scale), setPixel(x,y,val),
+    - normalize, *no* normalize(max, min), scale(scale), setPixel(x,y,val)
+      -- the limitation concerning overloaded normalize stems from too
+      much hassle required to allow for it (maybe someday)
     - initialize(width, height, margin) -- this operation
       is for recipes used straight for Operator class constructor,
       it's ignored by further load calls (thanks to that there's no need
@@ -30,17 +32,9 @@ package lavrin.hgen;
 //  - exceptions in 'load'
 //  - operations different than 'initialize' in 'step'
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
 import lavrin.hgen.CHeightmap;
 import lavrin.hgen.Heightmap;
@@ -65,12 +59,14 @@ public class HeightmapOperator {
   private Heightmap hmap;
   private List<Map<String, Object>> pending;
   private List<Map<String, Object>> history;
+  private Map<String, Method> methods;
   private boolean initialized = false;
 
 
   public HeightmapOperator(int width, int height, int margin) {
     pending = new LinkedList<Map<String, Object>>();
     history = new LinkedList<Map<String, Object>>();
+    initHeightmapMethods();
 
     Map<String, Object> init = new HashMap<String, Object>(3);
     init.put("qty", 1);
@@ -90,6 +86,7 @@ public class HeightmapOperator {
   {
     pending = new LinkedList<Map<String, Object>>();
     history = new LinkedList<Map<String, Object>>();
+    initHeightmapMethods();
     load(filename);
 
     if (! initFromFilePossible()) {
@@ -100,6 +97,18 @@ public class HeightmapOperator {
       step();
         // first pending operation should be 'initialize' -- step will call
         // the suitable method and register the operation in history
+  }
+
+
+  private void initHeightmapMethods() {
+    Method[] ms = Heightmap.class.getMethods();
+    methods = new HashMap(ms.length);
+    for (Method m : ms) {
+      // skip (overloaded) normalize(max, min)
+      if (m.getName().equals("normalize") && m.getParameterTypes().length != 0)
+        continue;
+      methods.put(m.getName(), m);
+    }
   }
 
 
@@ -241,7 +250,48 @@ public class HeightmapOperator {
         // register in history
         registerOperation(op);
       } else {
-        // TODO: when operation is not 'initialize'
+        try {
+          Method meth = methods.get(name);
+          if (meth == null) {
+            System.err.printf("Skipping unknown Heightmap operation: %s\n",
+              name);
+          }
+
+          Class[] argTypes = meth.getParameterTypes();
+
+          // dbg
+          System.out.printf("%s\n", name);
+          for (Class c : argTypes)
+            System.out.println(c.toString());
+          // end dbg
+
+          // ugly... but there are only 3 types to check here so it must
+          // stay that way for some time
+          // TODO: make this less ugly
+          Object[] argObjs = new Object[args.size()];
+          for (int i = 0; i < args.size(); i++) {
+            if (argTypes[i].equals(int.class))
+              argObjs[i] = new Integer((String)args.get(i));
+            else if (argTypes[i].equals(float.class))
+              argObjs[i] = new Float((String)args.get(i) + "f");
+            else 
+              argObjs[i] = new Boolean((String)args.get(i));
+          }
+
+          meth.invoke(hmap, argObjs);
+        } /*catch (NoSuchMethodException e) {
+          System.err.printf("Can't find argument constructor for %s\n",
+            name);
+        }*/ catch (InvocationTargetException e) {
+          System.err.printf(
+            "Can't convert argument for method %s\n", name);
+        } /*catch (InstantiationException e) {
+          System.err.printf(
+            "Can't convert argument for method %s\n", name);
+        }*/ catch (IllegalAccessException e) {
+          // can't happen for constructors (only public used), may for methods
+          e.printStackTrace();
+        }
 
         // register in history
         registerOperation(op);
