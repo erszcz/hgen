@@ -43,10 +43,10 @@ public class HeightmapOperator {
   public static void main (String[] args)
   {
     try {
-      HeightmapOperator hop = new HeightmapOperator("hmap1_in.csv");
+      HeightmapOperator hop = new HeightmapOperator("hmap2_in.csv");
       hop.commit();
-      hop.save("hmap1_recipe.csv");
-      hop.getHeightmap().saveAsText("hmap1_dump.txt");
+      hop.save("hmap2_recipe.csv");
+      hop.getHeightmap().saveAsText("hmap2_dump.txt");
 
 
       HeightmapOperator hop2 = new HeightmapOperator(9, 9, 1);
@@ -258,12 +258,6 @@ public class HeightmapOperator {
           }
 
           Class[] argTypes = meth.getParameterTypes();
-
-          // dbg
-          System.out.printf("%s\n", name);
-          for (Class c : argTypes)
-            System.out.println(c.toString());
-          // end dbg
 
           // ugly... but there are only 3 types to check here so it must
           // stay that way for some time
