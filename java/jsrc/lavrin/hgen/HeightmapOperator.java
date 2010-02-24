@@ -8,7 +8,7 @@ package lavrin.hgen;
   Lines starting with '#' are treated as comments and ignored.
   Empty lines are ignored.
 
-  Allowed separators: ',', '<tab>', '<space>'.
+  Allowed separators: ',', '<tab>'.
   Each may be surounded by any number of whitespace.
 
   Allowed operations are those supported by the Heightmap interface:
@@ -26,9 +26,11 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,10 +41,13 @@ public class HeightmapOperator {
   public static void main (String[] args)
   {
     try {
-      HeightmapOperator hop = new HeightmapOperator("recipe.csv");
+      HeightmapOperator hop = new HeightmapOperator("hmap1_in.csv");
       hop.commit();
-      hop.save("recipe_bak.csv");
-      hop.getHeightmap().saveAsText("recipe_hmap_dump.txt");
+      hop.save("hmap1_recipe.csv");
+      hop.getHeightmap().saveAsText("hmap1_dump.txt");
+
+
+//      HeightmapOperator hop2 = new HeightmapOperator(9, 9, 1);
     } catch (HeightmapUninitializedException e) {
       e.printStackTrace();
     }
@@ -56,25 +61,23 @@ public class HeightmapOperator {
 
 
   public HeightmapOperator(int width, int height, int margin) {
-    pending = new ArrayList<Map<String, Object>>();
-    history = new ArrayList<Map<String, Object>>();
+    pending = new LinkedList<Map<String, Object>>();
+    history = new LinkedList<Map<String, Object>>();
 
-    initialize(width, height, margin);
-
-    // register operation
     Map<String, Object> init = new HashMap<String, Object>(3);
     init.put("qty", 1);
     init.put("name", "initialize");
     init.put("args", Arrays.asList(new int[]{width, height, margin}));
-    history.add(init);
+    pending.add(init);
+    step(); // perform and register the init operation
   }
 
 
   public HeightmapOperator(String filename)
     throws HeightmapUninitializedException 
   {
-    pending = new ArrayList<Map<String, Object>>();
-    history = new ArrayList<Map<String, Object>>();
+    pending = new LinkedList<Map<String, Object>>();
+    history = new LinkedList<Map<String, Object>>();
     load(filename);
 
     if (! initFromFilePossible()) {
@@ -122,6 +125,7 @@ public class HeightmapOperator {
   }
 
 
+  // TODO: throw exceptions for qties <= 0
   /**
     Load Heightmap generation recipe from CSV file.
     Loaded entries are appended to the queue of pending operations.
@@ -134,12 +138,12 @@ public class HeightmapOperator {
       while ( (s = br.readLine()) != null) {
         if (s.startsWith("#") || s.isEmpty()) continue;
         
-        String[] tokens = s.split("[\\s,]*");
+        String[] tokens = s.split("\\s*[,\t]\\s*");
         Map<String, Object> m = new HashMap<String, Object>(3);
         m.put("qty", Integer.parseInt(tokens[0]));
         m.put("name", tokens[1]);
 
-        List args = new ArrayList();
+        List args = new LinkedList();
         for (int i = 2; i < tokens.length; i++)
           args.add(tokens[i]);
 
@@ -156,7 +160,6 @@ public class HeightmapOperator {
   }
 
 
-  // TODO: save history
   /**
     Save operation history as CSV recipe file.
     All operations performed since initialization are written
@@ -164,8 +167,23 @@ public class HeightmapOperator {
     to the Heightmap.
   */
   public void save(String filename) {
-    for (Map m : history) {
+    try {
+      PrintStream out = new PrintStream(filename);
+      for (Map<String, Object> op : history) {
+        int qty = (Integer)op.get("qty");
+        String name = (String)op.get("name");
+        List args = (List)op.get("args");
 
+        StringBuilder argTxt = new StringBuilder();
+        Iterator<String> argIter = args.iterator();
+        while (argIter.hasNext())
+          argTxt.append(", " + argIter.next());
+
+        out.printf("%d, %s%s\n", qty, name, argTxt.toString());
+      }
+      out.close();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
@@ -194,21 +212,66 @@ public class HeightmapOperator {
   public void step() /*throws InvalidOperationException*/ {
     if (pending.isEmpty()) return;
 
-    Map<String, Object> op = pending.get(0);
-    int qty = (Integer)op.get("qty");
-    String name = (String)op.get("name");
-    List args = (List)op.get("args");
+    try {
+      Map<String, Object> op = pending.get(0);
+      final int qty = (Integer)op.get("qty");
+      final String name = (String)op.get("name");
+      final List args = (List)op.get("args");
 
-    if (name.equals("initialize")) {
-      if (initialized) return;
+      // perform operation
+      if (name.equals("initialize")) {
+        if (initialized) return; // (!) -- don't do registerOperation
 
-      initialize( new Integer(args.get(0)),
-        new Integer(args.get(1)), new Integer(args.get(2)) );
-      history.add(op);
-      return;
+        initialize( new Integer((String)args.get(0)),
+          new Integer((String)args.get(1)), new Integer((String)args.get(2)) );
+          // constructors used, as 'args' contains parseable strings
+
+        // register in history
+        registerOperation(op);
+      } else {
+        // TODO: when operation is not 'initialize'
+
+        // register in history
+        registerOperation(op);
+      }
+      // 'registerOperation' isn't performed here (though it happens
+      // in both cases) as it might not be wanted in case of
+      // 'initialize' operation appearing in 'pending' when the hmap
+      // is already initialized; that's because of the if(...)->return
+      // marked with (!)
+    } catch (IndexOutOfBoundsException e) {
+      // this mustn't happen
+      e.printStackTrace();
     }
+  }
 
-    // TODO: when operation is not 'initialize'
+
+  private void registerOperation(Map<String, Object> op) {
+    final int qty = (Integer)op.get("qty");
+    final String name = (String)op.get("name");
+    final List args = (List)op.get("args");
+
+    if (qty <= 1)
+      pending.remove(0);
+
+    Map<String, Object> prevOp =
+      history.isEmpty() ? null : history.get(history.size() - 1);
+    if (prevOp != null &&
+        name.equals(prevOp.get("name")) &&
+        args.equals(prevOp.get("args"))) {
+      // op is in history, with different qty
+      prevOp.put( "qty", ((Integer)prevOp.get("qty")) + 1 );
+        // qty is stored as Integer in the Map, so only cast is required
+        // in contrast to the stuation with 'initialize' args above
+    } else { // op not yet in history
+      Map<String, Object> newOp = new HashMap<String, Object>(3);
+      newOp.put("qty", 1);
+      newOp.put("name", name);
+      newOp.put("args", args);
+      history.add(newOp);
+    }
+    // in both cases decrease the qty in pending
+    op.put( "qty", ((Integer)op.get("qty")) - 1 );
   }
 
 
