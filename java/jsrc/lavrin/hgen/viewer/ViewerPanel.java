@@ -18,14 +18,14 @@ import lavrin.hgen.viewer.*;
 
 public class ViewerPanel extends JPanel
 {
-  private static final int PWIDTH = 640;   // size of panel
-  private static final int PHEIGHT = 640; 
+//  private static final int PWIDTH = 640;   // size of panel
+//  private static final int PHEIGHT = 640; 
 
   private static final int BOUNDSIZE = 500;  // larger than world
 
   private final static float Z_START = 200.0f;
 
-  private static final int UPDATE_TIME = 250;  // ms, for updating the balls
+//  private static final int UPDATE_TIME = 250;  // ms, for updating the balls
 
   private Canvas3D canvas3D;
 
@@ -42,7 +42,17 @@ public class ViewerPanel extends JPanel
 
     setLayout( new BorderLayout() );
     setOpaque( false );
-    setPreferredSize( new Dimension(PWIDTH, PHEIGHT));
+//    setPreferredSize( new Dimension(PWIDTH, PHEIGHT));
+
+    /* the size of the panel is dictated by the isFullScreen, width and
+       height properties */
+    if (vProps.isFullScreen())  // full-screen
+      setPreferredSize( Toolkit.getDefaultToolkit().getScreenSize() );
+    else {  // not full-screen
+      int width = vProps.getWidth();
+      int height = vProps.getHeight();
+      setPreferredSize( new Dimension(width, height));
+    }
 
     GraphicsConfiguration config =
 					SimpleUniverse.getPreferredConfiguration();
@@ -123,7 +133,6 @@ public class ViewerPanel extends JPanel
   }  // end of lightScene()
 
 
-
   private void addBackground() {
     Background back = new Background();
     back.setApplicationBounds( bounds );
@@ -141,7 +150,8 @@ public class ViewerPanel extends JPanel
 
       sceneBG.addChild(land);
 
-      TimeBehavior tb = new TimeBehavior(UPDATE_TIME, land);
+//      TimeBehavior tb = new TimeBehavior(UPDATE_TIME, land);
+      TimeBehavior tb = new TimeBehavior(vProps.getUpdateTime(), land);
       tb.setSchedulingBounds(bounds);
       sceneBG.addChild(tb);
     } catch (HeightmapUninitializedException e) {
@@ -198,7 +208,8 @@ public class ViewerPanel extends JPanel
 
     // set up keyboard controls to move the viewport
     ViewPlatformBehavior controlBehavior = vProps.getControls().equals("mouse")
-      ? new OrbitBehavior() : new UserControlsBehavior(canvas3D);
+      ? new OrbitBehavior(canvas3D, OrbitBehavior.REVERSE_ALL)
+      : new UserControlsBehavior(canvas3D);
     controlBehavior.setSchedulingBounds(bounds);
     vp.setViewPlatformBehavior(controlBehavior);
   }

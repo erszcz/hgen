@@ -102,8 +102,9 @@ public class Landscape extends Shape3D
     Color3f red       = new Color3f(1.0f, 0.0f, 0.0f);
     Color3f brown     = new Color3f(0.7f, 0.2f, 0.0f);
     Color3f white     = new Color3f(1.0f, 1.0f, 1.0f);
+    Color3f yellow    = new Color3f(0.3f, 0.3f, 0.0f);
 
-    Material mat = new Material(darkBrown, black, brown, blue, 45);
+    Material mat = new Material(darkBrown, black, brown, yellow, 5);
       // sets ambient, emissive, diffuse, specular, shininess
     mat.setLightingEnable(true);
     app.setMaterial(mat);
