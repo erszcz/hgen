@@ -346,12 +346,6 @@ class HeightmapOperatorException extends Exception {
   }
 }
 
-class HeightmapUninitializedException extends HeightmapOperatorException {
-  public HeightmapUninitializedException(String message) {
-    super(message);
-  }
-}
-
 class RecipeParseException extends HeightmapOperatorException {
   public RecipeParseException(String message) {
     super(message);
