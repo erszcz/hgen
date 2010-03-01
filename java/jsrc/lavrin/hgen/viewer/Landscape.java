@@ -8,64 +8,22 @@ import lavrin.hgen.*;
 
 public class Landscape extends Shape3D 
 {
-//  private final static int SIDE_LEN = 256;
-    /* Should be even, since the code assumes that SIDE_LEN/2 is 
-       a whole number. */
-//  private final static int MARGIN = SIDE_LEN / 8;
-  private int SIDE_LEN;
-  private int MARGIN;
-
   private Heightmap hmap;
   private HeightmapOperator hop;
 
-  public Landscape() {
+  public Landscape(HeightmapOperator op) {
     setCapability(ALLOW_GEOMETRY_READ);
     setCapability(ALLOW_GEOMETRY_WRITE);
 
-//    hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
-//    hmap.setWrapped(false);
-    initHeightmap();
+    hop = op;
+    hmap = hop.getHeightmap();
 
     createGeometry();
     createAppearance();
   } // end of Landscape()
 
-  private void initHeightmap() {
-//    hmap.flatFill(0.0f);
-//    hmap.clusterFill(0, 100, 50, MARGIN / 2);
-//    hmap.walkerFilter(5, 15);
-//    hmap.walkerFilter(7, 2);
-
-//    hmap.walkerFilter(1, 1);
-//    hmap.smoothFilter(MARGIN);
-//    hmap.smoothFilter(1);
-
-//    for (int i = 0; i < 100; i++)
-//      hmap.faultingFilter(10,5);
-//    hmap.smoothFilter(MARGIN / 3);
-//    hmap.walkerFilter(1, 1);
-//    hmap.smoothFilter(1);
-
-//    HeightmapOperator hop =
-//      new HeightmapOperator(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
-//    hop.load("hmap2_in.csv");
-//    hop.commit();
-//    hmap = hop.getHeightmap();
-
-    try {
-      hop = new HeightmapOperator("viewer_in.csv");
-//      hop.commit();
-      hmap = hop.getHeightmap();
-      SIDE_LEN = hmap.getWidth();
-      MARGIN = hmap.getMargin();
-    } catch (Exception e) {
-      e.printStackTrace();
-      hmap = new CHeightmap(SIDE_LEN + 1, SIDE_LEN + 1, MARGIN);
-    }
-  }
-
   public void update() {
-//    hmap.smoothFilter(MARGIN / 3);
+    if (hop == null) return;
     hop.step();
     createGeometry();
   }
@@ -90,11 +48,11 @@ public class Landscape extends Shape3D
 
 
   private Point3f[] createCoords() {
-    Point3f[] coords = new Point3f[SIDE_LEN*SIDE_LEN*4];
+    Point3f[] coords = new Point3f[hmap.getWidth() * hmap.getHeight() * 4];
       // since each tile has 4 coords
     int i = 0;
-    for(int z=0; z <= SIDE_LEN-1; z++) {    // skip z's front row
-      for(int x=0; x <= SIDE_LEN-1; x++) {  // skip x's right column
+    for(int z=0; z <= hmap.getHeight() - 1; z++) {    // skip z's front row
+      for(int x=0; x <= hmap.getWidth() - 1; x++) {  // skip x's right column
         createTile(coords, i, x, z);
         i = i + 4;  // since 4 coords created for 1 tile
       }
@@ -107,8 +65,8 @@ public class Landscape extends Shape3D
   // Coords for a single quad (tile), its top left hand corner is at (x,height,z)
   {
     // (xc, zc) is the (x,z) coordinate in the scene
-    float xc = x - SIDE_LEN / 2;
-    float zc = z - SIDE_LEN / 2;
+    float xc = x - hmap.getWidth() / 2;
+    float zc = z - hmap.getHeight() / 2;
 
     float min = hmap.getMin();
     float max = hmap.getMax();

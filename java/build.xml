@@ -74,6 +74,7 @@
       classpath="${lib}/vecmath.jar:${lib}/j3dcore.jar:${lib}/j3dutils.jar:${dist}/lib/MyProject-${DSTAMP}.jar"
       classname="lavrin.hgen.viewer.Viewer">
       <jvmarg value="-Djava.library.path=." />
+      <arg value="hills_sparse.csv" />
     </java>
   </target>
 

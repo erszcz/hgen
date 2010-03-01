@@ -12,6 +12,7 @@ import com.sun.j3d.utils.behaviors.keyboard.*;
 import com.sun.j3d.utils.behaviors.vp.*;
 import com.sun.j3d.utils.image.*;
 
+import lavrin.hgen.*;
 import lavrin.hgen.viewer.*;
 
 
@@ -32,9 +33,13 @@ public class ViewerPanel extends JPanel
   private BranchGroup sceneBG;
   private BoundingSphere bounds;   // for environment nodes
 
+  private ViewerProperties vProps;
 
-  public ViewerPanel()
+
+  public ViewerPanel(ViewerProperties vps)
   {
+    vProps = vps;
+
     setLayout( new BorderLayout() );
     setOpaque( false );
     setPreferredSize( new Dimension(PWIDTH, PHEIGHT));
@@ -73,7 +78,7 @@ public class ViewerPanel extends JPanel
     addBackground();      // the sky
     addLandscape();       // the multi-textured land (and splashes)
 //    addSphere();
-    addWedge();
+//    addWedge();
 
     sceneBG.compile();   // fix the scene
   } // end of createSceneGraph()
@@ -129,13 +134,21 @@ public class ViewerPanel extends JPanel
 
 
   private void addLandscape() {
-    Landscape land = new Landscape();
+    try {
+      HeightmapOperator hop = new HeightmapOperator(vProps.getRecipe());
 
-    sceneBG.addChild(land);
+      Landscape land = new Landscape(hop);
 
-    TimeBehavior tb = new TimeBehavior(UPDATE_TIME, land);
-    tb.setSchedulingBounds(bounds);
-    sceneBG.addChild(tb);
+      sceneBG.addChild(land);
+
+      TimeBehavior tb = new TimeBehavior(UPDATE_TIME, land);
+      tb.setSchedulingBounds(bounds);
+      sceneBG.addChild(tb);
+    } catch (HeightmapUninitializedException e) {
+      String err = "Can't find heightmap initialization information in file %s.\n";
+      System.err.printf(err, vProps.getRecipe());
+      System.exit(1);
+    }
   }  // end of addLandscape()
 
 
@@ -184,8 +197,8 @@ public class ViewerPanel extends JPanel
     targetTG.setTransform(t3d);
 
     // set up keyboard controls to move the viewport
-    ViewPlatformBehavior controlBehavior = new UserControlsBehavior(canvas3D);
-//    ViewPlatformBehavior controlBehavior = new OrbitBehavior();
+    ViewPlatformBehavior controlBehavior = vProps.getControls().equals("mouse")
+      ? new OrbitBehavior() : new UserControlsBehavior(canvas3D);
     controlBehavior.setSchedulingBounds(bounds);
     vp.setViewPlatformBehavior(controlBehavior);
   }
